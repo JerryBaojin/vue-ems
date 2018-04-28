@@ -47,14 +47,28 @@
                 <el-form-item label="问题">
                     <el-input type="textarea" v-model="form.question"></el-input>
                   </el-form-item>
-                <el-form-item label="选项">
-                    <el-input type="textarea"  rows="6" cols="5" v-model="form.answer"></el-input>
+                  <el-form-item label="选项">
+                      <div class="items"v-for="(items,key) in form.options">
+                        <span>{{items[0]}}</span>
+                        <el-input
+                          type="textarea"
+                          autosize
+                          :placeholder="items[1]"
+                        >
+                        </el-input>
+                      </div>
+                  </el-form-item>
+
+                <el-form-item label="答案">
+                      <div class="options">
+                         <el-checkbox label="备选项1" border></el-checkbox>
+                         <el-checkbox  label="备选项2" border></el-checkbox>
+                       </div>
                 </el-form-item>
+
                 <el-form-item label="答案">
                     <el-input v-model="form.correct"></el-input>
                 </el-form-item>
-
-
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -88,6 +102,8 @@
                 editVisible: false,
                 delVisible: false,
                 form: {
+                    checkedLists:[],
+                    options:[],
                     answer:'',
                     correct:'',
                     question:'',
@@ -103,7 +119,6 @@
         },
         computed: {
             data() {
-
                   return this.tableData.slice((this.cur_page-1)*10,this.cur_page*10)
             }
         },
@@ -131,9 +146,21 @@
                 return row.tag === value;
             },
             handleEdit(index, row) {
-
-                this.idx = index;
+                if(row.correct.length!=1){
+                  row['checkedLists']=row.correct.split(",");
+                }else{
+                  row['checkedLists']=[row.correct];
+                }
+                row['options']=new Array();
+                row['answer'].split("###").map((value,key)=>{
+                let  dot=".";
+                    /\./.test(value)?dot=".":dot="．";
+                    row['options'].push((value.split(dot)));
+                })
+              //  row['options']=row['answer'].split("###");
                 this.form = {...row};
+                this.idx = index;
+
                 this.editVisible = true;
             },
             handleDelete(index, row) {
@@ -147,6 +174,7 @@
                 for (let i = 0; i < length; i++) {
                     str += this.multipleSelection[i].name + ' ';
                 }
+
                 this.$message.error('删除了' + str);
                 this.multipleSelection = [];
             },
@@ -180,7 +208,16 @@
     .handle-box {
         margin-bottom: 20px;
     }
-
+    .items{
+      display:flex;margin:5px 0 5px;
+    }
+    .items span{
+      margin-left:5px;
+    }
+    .options label{
+      display: block;
+      margin: 5px 0 5px !important;
+    }
     .handle-select {
         width: 120px;
     }
