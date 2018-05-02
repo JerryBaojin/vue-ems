@@ -9,8 +9,8 @@
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="delAll">批量删除</el-button>
                 <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
-                    <el-option key="1" label="广东省" value="单选"></el-option>
-                    <el-option key="2" label="湖南省" value="多选"></el-option>
+                    <el-option key="1" label="单选" value="单选"></el-option>
+                    <el-option key="2" label="多选" value="多选"></el-option>
                 </el-select>
                 <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
@@ -40,27 +40,28 @@
         </div>
 
         <!-- 编辑弹出框 -->
+        <el-form>
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
             <el-form ref="form" :model="form" label-width="50px">
                 <el-form-item label="问题">
                     <el-input type="textarea" v-model="form.question"></el-input>
                   </el-form-item>
                   <el-form-item label="选项">
-                      <div class="items"v-for="(items,key) in form.options">
+                      <div class="items"v-for="(items,key) in tempFormDates.options">
                         <span>{{items[0]}}</span>
                         <el-input
+                          minlength="1"
                           type="textarea"
                           autosize
-                          :value="items[1]"
+                          v-model="items[1]"
                         >
                         </el-input>
-                        <span><el-button type="danger" @click="delOption(key)">删除此选项</el-button></span>
                       </div>
-                        <el-button type="danger" @click="addOption()">添加选项</el-button>
+
                   </el-form-item>
                 <el-form-item label="答案">
-                      <el-checkbox-group class="options"  v-model="form.checkedLists">
-                        <div  v-for="items in form.options">
+                      <el-checkbox-group class="options"  v-model="tempFormDates.checkedLists">
+                        <div  v-for="items in tempFormDates.options">
                           <el-checkbox :label="items[0]"   border></el-checkbox>
                         </div>
                        </el-checkbox-group>
@@ -71,7 +72,7 @@
                 <el-button type="primary" @click="saveEdit">确 定</el-button>
             </span>
         </el-dialog>
-
+      </el-form>
         <!-- 删除提示框 -->
         <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
             <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
@@ -99,12 +100,14 @@
                 editVisible: false,
                 delVisible: false,
                 form: {
-                    checkedLists:["B"],
-                    options:[],
                     answer:'',
                     correct:'',
                     question:'',
                     type:''
+                },
+                tempFormDates:{
+                  checkedLists:[],
+                  options:[]
                 },
                 idx: -1
             }
@@ -120,23 +123,12 @@
             }
         },
         methods: {
-          //添加选项
-          addOption(){
-            console.log(this.form);
-          },
-          //删除选项
-          delOption(val){
-            console.log(val);
-          },
             // 分页导航
             handleCurrentChange(val) {
                 this.cur_page = val;
-                console.log(val)
               //  this.getData();
             },
-            // 获取 easy-mock 的模拟数据
             getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
                 this.$axios.post(this.url, {
                     action:"getQuestions",
                     page: this.cur_page
@@ -146,27 +138,30 @@
             },
             search() {
                 this.is_search = true;
+                console.log(this);
             },
             filterTag(value, row) {
                 return row.tag === value;
             },
             handleEdit(index, row) {
                 if(row.correct.length!=1){
-                  row['checkedLists']=row.correct.split(",");
+                  this.tempFormDates['checkedLists']=row.correct.split(",");
                 }else{
-                  row['checkedLists']=[row.correct];
+                    this.tempFormDates['checkedLists']=[row.correct];
                 }
-                row['options']=new Array();
+                  this.tempFormDates['options']=new Array();
                 row['answer'].split("###").map((value,key)=>{
-                let  dot=".";
-                    /\./.test(value)?dot=".":dot="．";
-                    row['options'].push((value.split(dot)));
+                      let  dot=".";
+                      /\./.test(value)?dot=".":dot="．";
+                      let tempStoreArr=value.split(dot);
+                      tempStoreArr[0].length>=2?tempStoreArr[0]=tempStoreArr[0].slice(0,1):null;
+                      this.tempFormDates['options'].push(tempStoreArr);
                 })
               //  row['options']=row['answer'].split("###");
                 this.form = {...row};
                 this.idx = index;
-                  console.log(this.form)
                 this.editVisible = true;
+
             },
             handleDelete(index, row) {
                 this.idx = index;
@@ -174,29 +169,78 @@
             },
             delAll() {
                 const length = this.multipleSelection.length;
+                let __this=this;
                 let str = '';
                 this.del_list = this.del_list.concat(this.multipleSelection);
-                for (let i = 0; i < length; i++) {
-                    str += this.multipleSelection[i].name + ' ';
-                }
 
-                this.$message.error('删除了' + str);
+                this.$axios.post(this.url,{
+                  action:"delete",
+                  details:this.del_list
+                }).then(res=>{
+
+                  if(res!==1){
+                    this.$message.error(`删除失败!`);
+                    return false;
+                  }
+                  __this.del_list.map((v)=>{
+                    __this.tableData.splice(__this.tableData.findIndex(value=>value.id==v),1)
+                  })
+
+                    this.$message.success(`删除成功!`);
+                }).catch(e=>{
+                  console.log(res)
+              })
+              console.log(this.del_list )
                 this.multipleSelection = [];
             },
             handleSelectionChange(val) {
-                this.multipleSelection = val;
+
+                this.multipleSelection = val.map(v=>{
+                  return v.id
+                });
             },
             // 保存编辑
             saveEdit() {
+              let flag=true;
+              let __this=this;
+              this.form.answer=this.tempFormDates.options.reduce((v,p)=>{
+                if(Array.isArray(v)){
+                  if(v[1]=='' || p[1]==''){
+                    flag=false;
+                  }
+                    return v.join(".")+"###\n"+p.join(".");
+                }else{
+                  if(p[1]==''){
+                    flag=false;
+                  }
+                    return v+"###"+p.join(".");
+                }
+              })
+              this.form.correct=this.tempFormDates.checkedLists.join(",");
+
+              if(flag){
+                if(this.form.correct.length>=2){
+                  this.form.type="多选"
+                }else{
+                  this.form.type="单选"
+                }
                 this.$set(this.tableData, this.idx, this.form);
-                this.editVisible = false;
-                this.$axios.post(this.url,{
-                  action:"update",
-                  details:this.form
-                }).then(res=>{
-                  console.log(res)
-                })
-                this.$message.success(`修改第 ${this.idx+1} 行成功`);
+                            this.editVisible = false;
+                                this.$axios.post(this.url,{
+                                  action:"update",
+                                  details:this.form
+                                }).then(res=>{
+                                    this.$message.success(`修改第 ${this.idx+1} 行成功`);
+                                }).catch(e=>{
+                                  console.log(res)
+                              })
+
+              }else{
+                    this.$message.error(`请填写所有选项的内容`);
+              }
+
+
+
             },
             // 确定删除
             deleteRow(){
