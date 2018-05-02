@@ -25,9 +25,7 @@
                 <el-table-column prop="correct" label="正确答案" >
                 </el-table-column>
                 <el-table-column prop="type" label="类型" >
-
                 </el-table-column>
-
                 <el-table-column label="操作" width="180">
                     <template slot-scope="scope">
                         <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
@@ -53,21 +51,19 @@
                         <el-input
                           type="textarea"
                           autosize
-                          :placeholder="items[1]"
+                          :value="items[1]"
                         >
                         </el-input>
+                        <span><el-button type="danger" @click="delOption(key)">删除此选项</el-button></span>
                       </div>
+                        <el-button type="danger" @click="addOption()">添加选项</el-button>
                   </el-form-item>
-
                 <el-form-item label="答案">
-                      <div class="options">
-                         <el-checkbox label="备选项1" border></el-checkbox>
-                         <el-checkbox  label="备选项2" border></el-checkbox>
-                       </div>
-                </el-form-item>
-
-                <el-form-item label="答案">
-                    <el-input v-model="form.correct"></el-input>
+                      <el-checkbox-group class="options"  v-model="form.checkedLists">
+                        <div  v-for="items in form.options">
+                          <el-checkbox :label="items[0]"   border></el-checkbox>
+                        </div>
+                       </el-checkbox-group>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -98,11 +94,12 @@
                 select_cate: '',
                 select_word: '',
                 del_list: [],
+                visible2:false,
                 is_search: false,
                 editVisible: false,
                 delVisible: false,
                 form: {
-                    checkedLists:[],
+                    checkedLists:["B"],
                     options:[],
                     answer:'',
                     correct:'',
@@ -123,6 +120,14 @@
             }
         },
         methods: {
+          //添加选项
+          addOption(){
+            console.log(this.form);
+          },
+          //删除选项
+          delOption(val){
+            console.log(val);
+          },
             // 分页导航
             handleCurrentChange(val) {
                 this.cur_page = val;
@@ -160,7 +165,7 @@
               //  row['options']=row['answer'].split("###");
                 this.form = {...row};
                 this.idx = index;
-
+                  console.log(this.form)
                 this.editVisible = true;
             },
             handleDelete(index, row) {
