@@ -12,8 +12,34 @@
                     <el-option key="1" label="单选" value="单选"></el-option>
                     <el-option key="2" label="多选" value="多选"></el-option>
                 </el-select>
-                <el-input v-model="select_word" placeholder="筛选关键词" class="handle-input mr10"></el-input>
+                <el-input v-model="select_word" placeholder="筛选问题关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
+                <el-button type="primary" @click="dialogVisible = true">点击上传题库</el-button>
+
+                <el-dialog
+                  title="提示"
+                  :visible.sync="dialogVisible"
+                  width="30%"
+                >
+                  <span>
+                    <el-upload
+                      class="upload-demo"
+                      :action="url"
+                      :on-success="handleUploadSuccess"
+                      accept=".csv"
+                      :limit="1"
+
+                      >
+                      <el-button size="small" type="primary" >点击上传</el-button>
+                      <div slot="tip" class="el-upload__tip">只能上传excel文件，且不超过20m</div>
+                      </el-upload>
+                  </span>
+                  <span slot="footer" class="dialog-footer">
+                    <el-button @click="dialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                  </span>
+                </el-dialog>
+
             </div>
             <el-table :data="data" border style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
               <el-table-column type="selection" width="55"></el-table-column>
@@ -90,11 +116,13 @@
             return {
                 url: 'api/index.php',
                 tableData: [],
+                backUpData: [],
                 cur_page: 1,
                 multipleSelection: [],
                 select_cate: '',
                 select_word: '',
                 del_list: [],
+                dialogVisible: false,
                 visible2:false,
                 is_search: false,
                 editVisible: false,
@@ -113,6 +141,9 @@
             }
         },
         watch:{
+          select_cate(val){
+            this.tableData=this.backUpData.filter(v=>v.type==val)
+          }
         },
         created() {
             this.getData();
@@ -123,6 +154,9 @@
             }
         },
         methods: {
+          handleUploadSuccess(v){
+            console.log(v);
+          },
             // 分页导航
             handleCurrentChange(val) {
                 this.cur_page = val;
@@ -133,12 +167,14 @@
                     action:"getQuestions",
                     page: this.cur_page
                 }).then((res) => {
+                    this.backUpData = res.data;
                     this.tableData = res.data;
                 })
             },
             search() {
                 this.is_search = true;
-                console.log(this);
+                let reg=new RegExp(this.select_word)
+              this.tableData=this.backUpData.filter(v=> reg.test(v.question))
             },
             filterTag(value, row) {
                 return row.tag === value;
@@ -253,7 +289,14 @@
 
 </script>
 
-<style scoped>
+<style >
+.el-upload {
+  width: unset !important;
+  height:unset !important;
+}
+  .upload-demo{
+    width: 360px;
+  }
     .handle-box {
         margin-bottom: 20px;
     }
