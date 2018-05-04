@@ -22,12 +22,12 @@ export default new Router({
                 {
                     path: '/table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
-                    meta: { title: '基础表格' }
+                    meta: { title: '试题题库' }
                 },
                 {
                     path: '/tabs',
                     component: resolve => require(['../components/page/Tabs.vue'], resolve),
-                    meta: { title: 'tab选项卡' }
+                    meta: { title: '用户管理' }
                 },
                 {
                     path: '/form',
@@ -44,13 +44,13 @@ export default new Router({
                     // markdown组件
                     path: '/markdown',
                     component: resolve => require(['../components/page/Markdown.vue'], resolve),
-                    meta: { title: 'markdown编辑器' }    
+                    meta: { title: 'markdown编辑器' }
                 },
                 {
                     // 图片上传组件
                     path: '/upload',
                     component: resolve => require(['../components/page/Upload.vue'], resolve),
-                    meta: { title: '文件上传' }   
+                    meta: { title: '文件上传' }
                 },
                 {
                     // vue-schart组件

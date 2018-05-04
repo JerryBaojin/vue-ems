@@ -28,7 +28,7 @@
                       :on-success="handleUploadSuccess"
                       accept=".csv"
                       :limit="1"
-
+                      :file-list="uploadedFiles"
                       >
                       <el-button size="small" type="primary" >点击上传</el-button>
                       <div slot="tip" class="el-upload__tip">只能上传excel文件，且不超过20m</div>
@@ -117,6 +117,7 @@
                 url: 'api/index.php',
                 tableData: [],
                 backUpData: [],
+                uploadedFiles:[],
                 cur_page: 1,
                 multipleSelection: [],
                 select_cate: '',
@@ -155,11 +156,15 @@
         },
         methods: {
           handleUploadSuccess(v){
-            console.log(v);
+            if(v>0){
+              this.$message.success(`上传题库成功!`);
+              this.getData();
+            }
           },
             // 分页导航
             handleCurrentChange(val) {
                 this.cur_page = val;
+
               //  this.getData();
             },
             getData() {
@@ -213,8 +218,7 @@
                   action:"delete",
                   details:this.del_list
                 }).then(res=>{
-
-                  if(res!==1){
+                  if(res.data!=1){
                     this.$message.error(`删除失败!`);
                     return false;
                   }
@@ -226,7 +230,6 @@
                 }).catch(e=>{
                   console.log(res)
               })
-              console.log(this.del_list )
                 this.multipleSelection = [];
             },
             handleSelectionChange(val) {
@@ -280,9 +283,19 @@
             },
             // 确定删除
             deleteRow(){
-                this.tableData.splice(this.idx, 1);
-                this.$message.success('删除成功');
-                this.delVisible = false;
+              this.$axios.post(this.url,
+              {
+                action:"delete",
+                details:new Array(this.tableData[this.idx].id)
+              }).then(res=>{
+                if (res.data==1) {
+                  this.tableData.splice(this.idx, 1);
+                  this.$message.success('删除成功');
+                }
+              }).catch(e=>{
+                this.$message.success('删除失败功');
+              })
+                        this.delVisible = false;
             }
         }
     }
