@@ -8,6 +8,8 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="delAll">批量删除</el-button>
+                <el-button type="primary" icon="delete" class="handle-del mr10" @click="handleChoose">入选题库</el-button>
+
                 <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
                     <el-option key="1" label="单选" value="单选"></el-option>
                     <el-option key="2" label="多选" value="多选"></el-option>
@@ -155,6 +157,9 @@
             }
         },
         methods: {
+          handleChoose(){
+            console.log(this.multipleSelection);
+          },
           handleUploadSuccess(v){
             if(v>0){
               this.$message.success(`上传题库成功!`);
@@ -179,7 +184,7 @@
             search() {
                 this.is_search = true;
                 let reg=new RegExp(this.select_word)
-              this.tableData=this.backUpData.filter(v=> reg.test(v.question))
+              this.tableData=this.backUpData.filter(v=> reg.test(v.options) || reg.test(v.question))
             },
             filterTag(value, row) {
                 return row.tag === value;

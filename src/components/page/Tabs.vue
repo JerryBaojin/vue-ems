@@ -46,9 +46,6 @@
                 </el-pagination>
             </div>
         </div>
-
-
-
     </div>
 </template>
 
@@ -62,7 +59,6 @@
                 uploadedFiles:[],
                 cur_page: 1,
                 multipleSelection: [],
-
                 select_cate: '',
                 select_word: '',
                 pass_list: [],
@@ -75,7 +71,6 @@
         },
         watch:{
           select_cate(val){
-            console.log(this.backUpData)
             this.tableData=this.backUpData.filter(v=>v.status==val)
           }
         },

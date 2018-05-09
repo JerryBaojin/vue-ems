@@ -20,6 +20,11 @@ export default new Router({
                     meta: { title: '系统首页' }
                 },
                 {
+                    path: '/sysstting',
+                    component: resolve => require(['../components/page/SysSetting.vue'], resolve),
+                    meta: { title: '系统设置' }
+                },
+                {
                     path: '/table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
                     meta: { title: '试题题库' }

@@ -12,7 +12,6 @@
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
                 </div>
-                <p style="font-size:12px;line-height:30px;color:#999;">Tips : 用户名和密码随便填。</p>
             </el-form>
         </div>
     </div>
@@ -21,10 +20,26 @@
 <script>
     export default {
         data: function(){
+          let validateUserName=(rule,value,callback)=>{
+            if (value === '') {
+              callback(new Error('请输入账号'));
+             } else {
+
+               callback();
+             }
+          }
+          let validateUserPwd=(rule,value,callback)=>{
+            if (value === '') {
+              callback(new Error('请输入密码'));
+             } else {
+
+               callback();
+             }
+          }
             return {
                 ruleForm: {
-                    username: 'admin',
-                    password: '123123'
+                    username: '',
+                    password: ''
                 },
                 rules: {
                     username: [
@@ -40,8 +55,24 @@
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        localStorage.setItem('ms_username',this.ruleForm.username);
-                        this.$router.push('/');
+                        this.$axios.post('api/sys.php',{
+                          action:"login",
+                          data:{...this.ruleForm}
+                        }).then(res=>{
+
+                          if(res.data.statusCode==200){
+                            localStorage.setItem('ms_username',this.ruleForm.username);
+                            this.$router.push('/');
+                          }else{
+                            let p="";
+                            res.data.statusCode==400?p="用户名错误!":p="密码错误!";
+                            this.$message.error(p);
+                          }
+                        }).catch(e=>{
+                          console.log(e);
+                        })
+
+
                     } else {
                         console.log('error submit!!');
                         return false;

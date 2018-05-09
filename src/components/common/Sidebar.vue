@@ -36,6 +36,11 @@
                         title: '系统首页'
                     },
                     {
+                        icon: 'el-icon-setting',
+                        index: 'sysstting',
+                        title: '系统设置'
+                    },
+                    {
                         icon: 'el-icon-tickets',
                         index: 'table',
                         title: '试题题库'
