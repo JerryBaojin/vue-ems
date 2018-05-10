@@ -108,7 +108,7 @@
           ],
           timu: [
             {  required: true, message: '请输入每套题的数目', trigger: 'blur' },
-            { type: 'number',min: 1, max: 5, message: '请输入每套题的数目', trigger: 'blur' }
+            { type: 'number',min: 1, max: 100, message: '请输入每套题的数目', trigger: 'blur' }
           ],
           perconunter: [
             {required: true, message: '请输入每题答题时间 单位(秒)', trigger: 'blur' },

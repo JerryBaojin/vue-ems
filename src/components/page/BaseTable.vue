@@ -8,7 +8,12 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="delAll">批量删除</el-button>
-                <el-button type="primary" icon="delete" class="handle-del mr10" @click="handleChoose">入选题库</el-button>
+                <el-button type="primary" icon="delete"  :disabled="chooseQ" class="handle-del mr10" @click="handleChoose">
+                 批量入选题库
+                 </el-button>
+                 <el-button type="primary" icon="delete"  :disabled="chooseQ" class="handle-del mr10" @click="handleRemove">
+                  批量剔除题库
+                  </el-button>
 
                 <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
                     <el-option key="1" label="单选" value="单选"></el-option>
@@ -33,7 +38,7 @@
                       :file-list="uploadedFiles"
                       >
                       <el-button size="small" type="primary" >点击上传</el-button>
-                      <div slot="tip" class="el-upload__tip">只能上传excel文件，且不超过20m</div>
+                      <div slot="tip" class="el-upload__tip">只能上传csv文件，且不超过20m</div>
                       </el-upload>
                   </span>
                   <span slot="footer" class="dialog-footer">
@@ -43,8 +48,9 @@
                 </el-dialog>
 
             </div>
-            <el-table :data="data" border style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
-              <el-table-column type="selection" width="55"></el-table-column>
+            {{countChoosed>0?`已选择了:${countChoosed}项`:""}}
+            <el-table :data="data" border :row-key="getRowKeys" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
+              <el-table-column type="selection" :reserve-selection="true" width="55"></el-table-column>
                 <el-table-column prop="id" width="55" label="id"></el-table-column>
                 <el-table-column prop="question" label="问题" width="120">
                 </el-table-column>
@@ -53,6 +59,18 @@
                 <el-table-column prop="correct" label="正确答案" >
                 </el-table-column>
                 <el-table-column prop="type" label="类型" >
+                </el-table-column>
+                <el-table-column   label="是否已入选题库" >
+                      <template slot-scope="scope">
+                       <el-popover
+                          placement="top-start"
+                          width="200"
+                          trigger="hover"
+                          :content="scope.row.isChecked==1?'点击从入选的测试题库剔除该题':'添加该题到测试题库'">
+                          <el-button  :disabled="chooseQ" slot="reference" :type="scope.row.isChecked==1?'success':'warnning'" @click="chanedChecking(scope.$index, scope.row,scope.row.isChecked)">{{scope.row.isChecked=="1"?"已入选":"未入选"}}</el-button>
+                        </el-popover>
+
+                      </template>
                 </el-table-column>
                 <el-table-column label="操作" width="180">
                     <template slot-scope="scope">
@@ -116,6 +134,10 @@
     export default {
         data() {
             return {
+                getRowKeys(row){
+                return row.id;
+                },
+                sysconfig:[],
                 url: 'api/index.php',
                 tableData: [],
                 backUpData: [],
@@ -140,7 +162,10 @@
                   checkedLists:[],
                   options:[]
                 },
-                idx: -1
+                idx: -1,
+                totalSelect:[],
+                _id:-1,
+                chooseQ:true
             }
         },
         watch:{
@@ -154,30 +179,107 @@
         computed: {
             data() {
                   return this.tableData.slice((this.cur_page-1)*10,this.cur_page*10)
+            },
+            countChoosed(){
+              return this.multipleSelection.length;
             }
         },
         methods: {
-          handleChoose(){
-            console.log(this.multipleSelection);
+          chanedChecking(pid,row,status){
+            if(confirm("确认此操作吗?")){
+              let p=0;
+              status==1?p="0":p="1";
+              this.changeChecking(row.id,p)
+            }
           },
-          handleUploadSuccess(v){
+          changeChecking(dates,status){
+            let date=dates;
+            if((typeof dates)=='string'){
+              date=new Array(dates);
+            }else if((typeof date)=="object"){
+              date=Array.from(dates)
+            }
+            this.$axios.post(this.url,{
+              action:"changeChecking",
+              ids:date
+            }).then(res=>{
+                if(res.data==1){
+                  this.$message.success("修改成功!");
+                  this.syncVueDates(date,status);
+                }
+            }).catch(e=>{
+              this.$message.error("网络错误!")
+            })
+          },
+          handleRemove(){
+            this.changeChecking(this.multipleSelection,"0");
+          },
+          syncVueDates(date,cStatus){
+            console.log(cStatus)
+            let __backUpData=this.backUpData;
+            let __tableDate=this.tableData;
+
+            date.map(ids=>{
+                __backUpData.map((v,k)=>{
+                  if(v.id==ids){
+                    __backUpData[k]['isChecked']=cStatus;
+                  }
+                })
+                __tableDate.map((v,k)=>{
+                  if(v.id==ids){
+                    __tableDate[k]['isChecked']=cStatus;
+                  }
+                })
+            })
+
+            this.backUpData=__backUpData;
+            this.tableData=__tableDate;
+          },
+          handleChoose(){
+            if(this.multipleSelection.length==0){
+              this.showTips("选题提醒",`需要选择${this.sysconfig.timu}道题`)
+            }else if (this.multipleSelection.length!=this.sysconfig.timu) {
+              let syncDates=this.multipleSelection.length-this.sysconfig.timu;
+                  syncDates>0?this.$message.error("多选了"+Math.abs(syncDates)+"道题,请删除部分!"):this.$message.error("少选了"+Math.abs(syncDates)+"道题,请添加"+Math.abs(syncDates)+"道题");
+            }else{
+              this.$axios.post(this.url,{
+                action:"recordTypes",
+                datas:[...this.multipleSelection]
+              }).then(res=>{
+                if(res.data==1){
+                  this.$message.success("已成功入选"+this.multipleSelection.length+"道题");
+                  this.syncVueDates([...this.multipleSelection],"1");
+                }else{
+                  this.$message.error("网络异常");
+                }
+              }).catch(e=>{
+                this.$message.error("网络异常");
+              })
+            }
+          },
+            showTips(title,contents){
+            const h=this.$createElement;
+            this.$notify({
+              title: title,
+              message: h('i', { style: 'color: teal'},contents),
+              duration: 5000
+            });
+          },
+            handleUploadSuccess(v){
             if(v>0){
               this.$message.success(`上传题库成功!`);
               this.getData();
             }
           },
-            // 分页导航
             handleCurrentChange(val) {
-                this.cur_page = val;
-
-              //  this.getData();
-            },
+              this.cur_page = val;
+          },
             getData() {
                 this.$axios.post(this.url, {
                     action:"getQuestions",
                     page: this.cur_page
                 }).then((res) => {
-                    this.backUpData = res.data;
+                    this.backUpData = [...res.data];
                     this.tableData = res.data;
                 })
             },
@@ -211,6 +313,7 @@
             },
             handleDelete(index, row) {
                 this.idx = index;
+                this._id=row.id;
                 this.delVisible = true;
             },
             delAll() {
@@ -228,7 +331,8 @@
                     return false;
                   }
                   __this.del_list.map((v)=>{
-                    __this.tableData.splice(__this.tableData.findIndex(value=>value.id==v),1)
+                    __this.tableData.splice(__this.tableData.findIndex(value=>value.id==v),1);
+                    __this.backUpData.splice(__this.backUpData.findIndex(value=>value.id==v),1)
                   })
 
                     this.$message.success(`删除成功!`);
@@ -238,10 +342,10 @@
                 this.multipleSelection = [];
             },
             handleSelectionChange(val) {
-
-                this.multipleSelection = val.map(v=>{
+               this.multipleSelection = val.map(v=>{
                   return v.id
-                });
+                })
+
             },
             // 保存编辑
             saveEdit() {
@@ -288,6 +392,7 @@
             },
             // 确定删除
             deleteRow(){
+              let __this=this;
               this.$axios.post(this.url,
               {
                 action:"delete",
@@ -295,6 +400,7 @@
               }).then(res=>{
                 if (res.data==1) {
                   this.tableData.splice(this.idx, 1);
+                  this.backUpData.splice(this.backUpData.findIndex(v=>v.id==__this._id),1);
                   this.$message.success('删除成功');
                 }
               }).catch(e=>{
@@ -302,6 +408,18 @@
               })
                         this.delVisible = false;
             }
+        },
+        mounted(){
+          this.$axios.post("api/sys.php",{
+            action:"getConfig"
+          }).then(res=>{
+            this.sysconfig={...res.data};
+
+            res.data.delivery=="false"?this.chooseQ=true:this.chooseQ=false;
+            console.log(this.chooseQ)
+          }).catch(e=>{
+            this.$message.error("网络传输错误!")
+          })
         }
     }
 

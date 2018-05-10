@@ -6,9 +6,9 @@
             <v-tags></v-tags>
             <div class="content">
                 <transition name="move" mode="out-in">
-                    <keep-alive>
+
                         <router-view></router-view>
-                    </keep-alive>
+                    
                 </transition>
             </div>
         </div>
