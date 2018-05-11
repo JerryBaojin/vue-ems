@@ -9,34 +9,50 @@
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量审核</el-button>
                 <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
-                    <el-option key="1" label="已审核" value="1"></el-option>
-                    <el-option key="2" label="未审核" value="0"></el-option>
+                    <el-option key="1" label="已激活" value="1"></el-option>
+                    <el-option key="2" label="未激活" value="0"></el-option>
                 </el-select>
                 <el-input v-model="select_word" placeholder="筛选微信昵称关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
             </div>
 
-            <el-table :data="data" border style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table  max-height="650" :data="data" border style="width: 100%" ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelectionChange">
               <el-table-column type="selection" width="55"></el-table-column>
-                <el-table-column prop="id" width="55" label="id"></el-table-column>
+                <!-- <el-table-column prop="id" width="55" label="id"></el-table-column> -->
+                <el-table-column prop="UID" width="60" label="登录ID"></el-table-column>
                 <el-table-column prop="nickname" label="微信昵称" width="120">
                 </el-table-column>
-                <el-table-column prop="phone" label="手机号" >
+                <el-table-column prop="name" label="真实姓名" >
                 </el-table-column>
-                <el-table-column prop="idCard" label="身份证号" >
+                <el-table-column prop="RegistTime" label="激活时间" >
                 </el-table-column>
-                <el-table-column prop="RegistTime" label="注册时间" >
+                <el-table-column prop="scores" label="当前月的得分" >
+                </el-table-column>
+                <el-table-column
+                  label="历史得分"
+                  width="180">
+                  <template slot-scope="scope">
+                    <el-popover trigger="hover" placement="top" v-if="scope.row.monthCount.length>0">
+                      <div v-for="(item,index) in scope.row.monthCount" >
+                        <p>月份：{{item.month}},得分:{{item.scoress}},排名:第{{item.rank}}名</p>
+                      </div>
+                      <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">历史得分</el-tag>
+                      </div>
+                    </el-popover>
+                  </template>
                 </el-table-column>
                 <el-table-column  label="状态" >
                   <template slot-scope="scope">
                   <div class="">
-                    {{scope.row.status==0?'未审核':'已审核'}}
+                    {{scope.row.RegistTime==null?'未激活':'已激活'}}
                   </div>
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="180">
+
+                <el-table-column v-if="false" label="操作" width="180">
                     <template slot-scope="scope">
-                        <el-button size="small" type="success" :disabled="scope.row.status==1" @click="handlePass(scope)">审核</el-button>
+                        <el-button size="small" type="success" :disabled="scope.row.status==1" @click="handlePass(scope)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -71,6 +87,7 @@
         },
         watch:{
           select_cate(val){
+            val==0?val=null:val=
             this.tableData=this.backUpData.filter(v=>v.status==val)
           }
         },
@@ -86,13 +103,23 @@
             handleCurrentChange(val) {
                 this.cur_page = val;
             },
+            tableRowClassname({row,rowIndex}){
+              if (row.RegistTime != null) {
+                 return '';
+               } else{
+                 return 'warning-row';
+               }
+            },
             getData() {
                 this.$axios.post(this.url, {
-                    action:"getQuestions",
-                    page: this.cur_page
-                }).then((res) => {
+                    action:"getUsers",
+                }).then(res=> {
+                  console.log(res);
                     this.backUpData = res.data;
                     this.tableData = res.data;
+                }).catch(e=>{
+                  console.log(e);
+                  this.$message.error("网络传输错误!");
                 })
             },
             search() {
@@ -104,7 +131,6 @@
                 return row.tag === value;
             },
             passAll() {
-
                 const length = this.multipleSelection.length;
                 if (length==0) {
                   this.$message.warning("所选项无效!");
@@ -174,10 +200,19 @@
 </script>
 
 <style >
-.el-upload {
-  width: unset !important;
-  height:unset !important;
+
+.el-table .warning-row {
+  background: oldlace;
 }
+
+.el-table .success-row {
+  background: #f0f9eb;
+}
+
+  .el-upload {
+    width: unset !important;
+    height:unset !important;
+  }
   .upload-demo{
     width: 360px;
   }

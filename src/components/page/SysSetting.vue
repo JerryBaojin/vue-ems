@@ -1,7 +1,7 @@
   <template id="">
     <div class="containers">
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="150px" class="demo-ruleForm">
-        <el-form-item label="答题倒计时(秒)" prop="conunter">
+        <el-form-item v-show="false" label="答题倒计时(秒)" prop="conunter">
           <el-input type="number" v-model.number="ruleForm.conunter"></el-input>
         </el-form-item>
 

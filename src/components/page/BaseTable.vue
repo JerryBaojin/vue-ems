@@ -6,6 +6,7 @@
             </el-breadcrumb>
         </div>
         <div class="container">
+
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="delAll">批量删除</el-button>
                 <el-button type="primary" icon="delete"  :disabled="chooseQ" class="handle-del mr10" @click="handleChoose">
@@ -48,8 +49,8 @@
                 </el-dialog>
 
             </div>
-            {{countChoosed>0?`已选择了:${countChoosed}项`:""}}
-            <el-table :data="data" border :row-key="getRowKeys" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
+            {{countChoosed>0?`已选择了:${countChoosed}项`:""}} <span class="" v-if="!chooseQ">当前已入选{{selectedOps}}项道题目</span>
+            <el-table  max-height="650" :data="data" border :row-key="getRowKeys" style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
               <el-table-column type="selection" :reserve-selection="true" width="55"></el-table-column>
                 <el-table-column prop="id" width="55" label="id"></el-table-column>
                 <el-table-column prop="question" label="问题" width="120">
@@ -103,7 +104,6 @@
                         >
                         </el-input>
                       </div>
-
                   </el-form-item>
                 <el-form-item label="答案">
                       <el-checkbox-group class="options"  v-model="tempFormDates.checkedLists">
@@ -170,13 +170,21 @@
         },
         watch:{
           select_cate(val){
-            this.tableData=this.backUpData.filter(v=>v.type==val)
+
+            this.tableData=this.backUpData.filter(v=>{
+
+              return   v.type==val
+            })
+            this.tableData.length<=10?this.cur_page=1:null;
           }
         },
         created() {
             this.getData();
         },
         computed: {
+          selectedOps(){
+            return this.backUpData.filter((v)=>v.isChecked==1).length;
+          },
             data() {
                   return this.tableData.slice((this.cur_page-1)*10,this.cur_page*10)
             },
@@ -236,26 +244,26 @@
             this.tableData=__tableDate;
           },
           handleChoose(){
-            if(this.multipleSelection.length==0){
-              this.showTips("选题提醒",`需要选择${this.sysconfig.timu}道题`)
-            }else if (this.multipleSelection.length!=this.sysconfig.timu) {
-              let syncDates=this.multipleSelection.length-this.sysconfig.timu;
-                  syncDates>0?this.$message.error("多选了"+Math.abs(syncDates)+"道题,请删除部分!"):this.$message.error("少选了"+Math.abs(syncDates)+"道题,请添加"+Math.abs(syncDates)+"道题");
-            }else{
-              this.$axios.post(this.url,{
-                action:"recordTypes",
-                datas:[...this.multipleSelection]
-              }).then(res=>{
-                if(res.data==1){
-                  this.$message.success("已成功入选"+this.multipleSelection.length+"道题");
-                  this.syncVueDates([...this.multipleSelection],"1");
-                }else{
+              if(this.multipleSelection.length==0){
+                this.showTips("选题提醒",`需要选择${this.sysconfig.timu}道题`)
+              }else if (this.multipleSelection.length!=this.sysconfig.timu) {
+                let syncDates=this.multipleSelection.length-this.sysconfig.timu;
+                    syncDates>0?this.$message.error("多选了"+Math.abs(syncDates)+"道题,请删除部分!"):this.$message.error("少选了"+Math.abs(syncDates)+"道题,请添加"+Math.abs(syncDates)+"道题");
+              }else{
+                this.$axios.post(this.url,{
+                  action:"recordTypes",
+                  datas:[...this.multipleSelection]
+                }).then(res=>{
+                  if(res.data==1){
+                    this.$message.success("已成功入选"+this.multipleSelection.length+"道题");
+                    this.syncVueDates([...this.multipleSelection],"1");
+                  }else{
+                    this.$message.error("网络异常");
+                  }
+                }).catch(e=>{
                   this.$message.error("网络异常");
-                }
-              }).catch(e=>{
-                this.$message.error("网络异常");
-              })
-            }
+                })
+              }
           },
             showTips(title,contents){
             const h=this.$createElement;
@@ -292,13 +300,16 @@
                 return row.tag === value;
             },
             handleEdit(index, row) {
+
                 if(row.correct.length!=1){
                   this.tempFormDates['checkedLists']=row.correct.split(",");
                 }else{
                     this.tempFormDates['checkedLists']=[row.correct];
                 }
                   this.tempFormDates['options']=new Array();
+
                 row['answer'].split("###").map((value,key)=>{
+                  console.log(value)
                       let  dot=".";
                       /\./.test(value)?dot=".":dot="．";
                       let tempStoreArr=value.split(dot);
@@ -307,7 +318,7 @@
                 })
               //  row['options']=row['answer'].split("###");
                 this.form = {...row};
-                this.idx = index;
+                this.idx = row.id;
                 this.editVisible = true;
 
             },
@@ -365,20 +376,25 @@
                 }
               })
               this.form.correct=this.tempFormDates.checkedLists.join(",");
-
               if(flag){
                 if(this.form.correct.length>=2){
                   this.form.type="多选"
                 }else{
                   this.form.type="单选"
                 }
-                this.$set(this.tableData, this.idx, this.form);
+
+
                             this.editVisible = false;
                                 this.$axios.post(this.url,{
                                   action:"update",
                                   details:this.form
                                 }).then(res=>{
-                                    this.$message.success(`修改第 ${this.idx+1} 行成功`);
+                                    this.$message.success(`修改第 ${this.idx} 行成功`);
+                                    const index=this.backUpData.findIndex(v=>v.id==this.idx);
+                                    console.log(index)
+                                    this.$set(this.tableData, this.tableData.findIndex(v=>v.id==this.idx), this.form);
+                                    this.$set(this.backUpData,index, this.form);
+                                    console.log(this.backUpData[index])
                                 }).catch(e=>{
                                   console.log(res)
                               })
@@ -414,9 +430,7 @@
             action:"getConfig"
           }).then(res=>{
             this.sysconfig={...res.data};
-
             res.data.delivery=="false"?this.chooseQ=true:this.chooseQ=false;
-            console.log(this.chooseQ)
           }).catch(e=>{
             this.$message.error("网络传输错误!")
           })
