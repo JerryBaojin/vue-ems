@@ -49,6 +49,10 @@
                         icon: 'el-icon-info',
                         index: 'tabs',
                         title: '用户管理'
+                    },{
+                        icon: 'el-icon-view',
+                        index: 'scores',
+                        title: '积分管理'
                     },
                     // {
                     //     icon: 'el-icon-date',

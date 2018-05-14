@@ -2,15 +2,15 @@
     <div class="table">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-tickets"></i> 用户</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-tickets"></i> 用户积分</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量审核</el-button>
-                <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
-                    <el-option key="1" label="已激活" value="1"></el-option>
-                    <el-option key="2" label="未激活" value="0"></el-option>
+                <el-select v-model="select_cate" placeholder="筛选时间段" class="handle-select mr10">
+                    <el-option key="1" label="当前月份" value="1"></el-option>
+                    <el-option :key="k" :label="v" :value="v" v-for="(v,k) in selectOptions"></el-option>
                 </el-select>
                 <el-input v-model="select_word" placeholder="筛选微信昵称关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
@@ -24,31 +24,18 @@
                 </el-table-column>
                 <el-table-column prop="name" label="真实姓名" >
                 </el-table-column>
-                <el-table-column prop="RegistTime" label="激活时间" >
+                <el-table-column prop="tag" label="当前时间段" >
                 </el-table-column>
-                <el-table-column prop="scores" label="当前月的得分" >
+                <el-table-column prop="nowDates" label="积分">
+
                 </el-table-column>
-                <el-table-column
-                  label="历史得分"
-                  width="180">
+
+                <el-table-column  label="排行" >
                   <template slot-scope="scope">
-                    <el-popover trigger="hover" placement="top" v-if="scope.row.monthCount.length>0">
-                      <div v-for="(item,index) in scope.row.monthCount" >
-                        <p>月份：{{item.month}},得分:{{item.scoress}},排名:第{{item.rank}}名</p>
-                      </div>
-                      <div slot="reference" class="name-wrapper">
-                        <el-tag size="medium">历史得分</el-tag>
-                      </div>
-                    </el-popover>
+                      第{{scope.row.rank}}名
                   </template>
                 </el-table-column>
-                <el-table-column  label="状态" >
-                  <template slot-scope="scope">
-                  <div class="">
-                    {{scope.row.oid==null?'未激活':'已激活'}}
-                  </div>
-                  </template>
-                </el-table-column>
+
 
                 <el-table-column v-if="false" label="操作" width="180">
                     <template slot-scope="scope">
@@ -73,6 +60,7 @@
                 tableData: [],
                 backUpData: [],
                 uploadedFiles:[],
+                selectOptions:[],
                 cur_page: 1,
                 multipleSelection: [],
                 select_cate: '',
@@ -87,15 +75,15 @@
         },
         watch:{
           select_cate(val){
-            this.tableData=this.backUpData.filter(v=>{
-              if(val==0){
-                return    v.oid==null;
-              }else{
-                return  v.oid!=null;
+              /*
+              this.tableData=this.backUpData.filter(v=>{
+                if(val==0){
+                  return    v.oid==null;
+                }else{
+                  return  v.oid!=null;
+                }
               }
-            }
-
-            )
+            )  */
           }
         },
         created() {
@@ -103,7 +91,27 @@
         },
         computed: {
             data() {
-                  return this.tableData.slice((this.cur_page-1)*10,this.cur_page*10)
+                  let that=this;
+                  var p=[...that.tableData.slice((this.cur_page-1)*10,this.cur_page*10)];
+
+                  p.map((v,k)=>{
+                      p[k].rank=k+1;
+                    if(that.select_cate==1 || that.select_cate==''){
+                      p[k]['nowDates']=v.scores;
+                      p[k]['tag']="当前月";
+                    }else{
+                      v.monthCount.map(value=> {
+                        if(value.month==that.select_cate){
+                            p[k]['nowDates']=value.scoress;
+                            console.log(value)
+                        }
+                      })
+                      p[k]['tag']=that.select_cate;
+
+                    }
+                  })
+;
+                  return p;
             }
         },
         methods: {
@@ -121,9 +129,18 @@
                 this.$axios.post(this.url, {
                     action:"getUsers",
                 }).then(res=> {
-                  console.log(res);
+                  let tempArray=[];
+                    res.data.map(v=>{
+                      if(v.monthCount.length>=1){
+                        v.monthCount.map(value=>{
+                            tempArray.push(value.month)
+                        })
+                      }
+                    })
+                    this.selectOptions=Array.from(new Set(tempArray));
                     this.backUpData = res.data;
                     this.tableData = res.data;
+
                 }).catch(e=>{
                   console.log(e);
                   this.$message.error("网络传输错误!");

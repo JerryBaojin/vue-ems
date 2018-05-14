@@ -35,6 +35,11 @@ export default new Router({
                     meta: { title: '用户管理' }
                 },
                 {
+                    path: '/scores',
+                    component: resolve => require(['../components/page/scores.vue'], resolve),
+                    meta: { title: '积分管理' }
+                },
+                {
                     path: '/form',
                     component: resolve => require(['../components/page/BaseForm.vue'], resolve),
                     meta: { title: '基本表单' }
