@@ -7,7 +7,7 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量审核</el-button>
+                <el-button type="primary" icon="delete" class="handle-del mr10" @click="exportExcel">导出当前格式的数据</el-button>
                 <el-select v-model="select_cate" placeholder="筛选时间段" class="handle-select mr10">
                     <el-option key="1" label="当前月份" value="1"></el-option>
                     <el-option :key="k" :label="v" :value="v" v-for="(v,k) in selectOptions"></el-option>
@@ -93,7 +93,6 @@
             data() {
                   let that=this;
                   var p=[...that.tableData.slice((this.cur_page-1)*10,this.cur_page*10)];
-
                   p.map((v,k)=>{
                       p[k].rank=k+1;
                     if(that.select_cate==1 || that.select_cate==''){
@@ -110,7 +109,6 @@
 
                     }
                   })
-;
                   return p;
             }
         },
@@ -154,42 +152,9 @@
             filterTag(value, row) {
                 return row.tag === value;
             },
-            passAll() {
-                const length = this.multipleSelection.length;
-                if (length==0) {
-                  this.$message.warning("所选项无效!");
-                  return false;
-                }
-                let __this=this;
-                let str = '';
-                this.pass_list = this.pass_list.concat(this.multipleSelection);
-                this.$axios.post(this.url,{
-                  action:"update",
-                  id:this.pass_list
-                }).then(res=>{
-                  if(res.data!=1){
-                    this.$message.error(`更新失败!`);
-                    return false;
-                  }
-                  __this.pass_list.map((v)=>{
-                    __this.tableData.map((value,key)=>{
+            exportExcel() {
 
-                      if(value.id==v){
-                        __this.tableData[key].status=1
-                      }
-                    })
-                    __this.backUpData.map((_value,_key)=>{
-                      if(_value.id==v){
-                        __this.backUpData[_key].status=1
-                      }
-                    })
-
-                  })
-                    this.$message.success(`更新成功!`);
-                }).catch(e=>{
-                  console.log(res)
-              })
-                this.multipleSelection = [];
+            window.location.href="api/__excel.php?type="+this.select_cate;
             },
             handlePass(scope) {
                 this.$axios.post(this.url,{

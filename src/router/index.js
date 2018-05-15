@@ -10,7 +10,7 @@ export default new Router({
             redirect: '/dashboard'
         },
         {
-            path: '/',
+            path: '/admin',
             component: resolve => require(['../components/common/Home.vue'], resolve),
             meta: { title: '自述文件' },
             children:[
@@ -30,56 +30,57 @@ export default new Router({
                     meta: { title: '试题题库' }
                 },
                 {
-                    path: '/tabs',
+                    path: 'tabs',
                     component: resolve => require(['../components/page/Tabs.vue'], resolve),
                     meta: { title: '用户管理' }
                 },
                 {
-                    path: '/scores',
+                    path: 'scores',
                     component: resolve => require(['../components/page/scores.vue'], resolve),
                     meta: { title: '积分管理' }
                 },
                 {
-                    path: '/form',
+                    path: 'form',
                     component: resolve => require(['../components/page/BaseForm.vue'], resolve),
                     meta: { title: '基本表单' }
-                },
-                {
-                    // 富文本编辑器组件
-                    path: '/editor',
-                    component: resolve => require(['../components/page/VueEditor.vue'], resolve),
-                    meta: { title: '富文本编辑器' }
-                },
-                {
-                    // markdown组件
-                    path: '/markdown',
-                    component: resolve => require(['../components/page/Markdown.vue'], resolve),
-                    meta: { title: 'markdown编辑器' }
-                },
-                {
-                    // 图片上传组件
-                    path: '/upload',
-                    component: resolve => require(['../components/page/Upload.vue'], resolve),
-                    meta: { title: '文件上传' }
-                },
-                {
-                    // vue-schart组件
-                    path: '/charts',
-                    component: resolve => require(['../components/page/BaseCharts.vue'], resolve),
-                    meta: { title: 'schart图表' }
-                },
-                {
-                    // 拖拽列表组件
-                    path: '/drag',
-                    component: resolve => require(['../components/page/DragList.vue'], resolve),
-                    meta: { title: '拖拽列表' }
-                },
-                {
-                    // 权限页面
-                    path: '/permission',
-                    component: resolve => require(['../components/page/Permission.vue'], resolve),
-                    meta: { title: '权限测试', permission: true }
-                }
+                  }
+                // },
+                // {
+                //     // 富文本编辑器组件
+                //     path: 'editor',
+                //     component: resolve => require(['../components/page/VueEditor.vue'], resolve),
+                //     meta: { title: '富文本编辑器' }
+                // },
+                // {
+                //     // markdown组件
+                //     path: 'markdown',
+                //     component: resolve => require(['../components/page/Markdown.vue'], resolve),
+                //     meta: { title: 'markdown编辑器' }
+                // },
+                // {
+                //     // 图片上传组件
+                //     path: 'upload',
+                //     component: resolve => require(['../components/page/Upload.vue'], resolve),
+                //     meta: { title: '文件上传' }
+                // },
+                // {
+                //     // vue-schart组件
+                //     path: 'charts',
+                //     component: resolve => require(['../components/page/BaseCharts.vue'], resolve),
+                //     meta: { title: 'schart图表' }
+                // },
+                // {
+                //     // 拖拽列表组件
+                //     path: 'drag',
+                //     component: resolve => require(['../components/page/DragList.vue'], resolve),
+                //     meta: { title: '拖拽列表' }
+                // },
+                // {
+                //     // 权限页面
+                //     path: '/permission',
+                //     component: resolve => require(['../components/page/Permission.vue'], resolve),
+                //     meta: { title: '权限测试', permission: true }
+                // }
             ]
         },
         {
@@ -93,10 +94,11 @@ export default new Router({
         {
             path: '/403',
             component: resolve => require(['../components/page/403.vue'], resolve)
-        },
-        {
-            path: '*',
-            redirect: '/404'
         }
+        // ,
+        // {
+        //     path: '*',
+        //     redirect: '/404'
+        // }
     ]
 })
