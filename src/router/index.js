@@ -15,17 +15,17 @@ export default new Router({
             meta: { title: '自述文件' },
             children:[
                 {
-                    path: '/dashboard',
+                    path: 'dashboard',
                     component: resolve => require(['../components/page/Dashboard.vue'], resolve),
                     meta: { title: '系统首页' }
                 },
                 {
-                    path: '/sysstting',
+                    path: 'sysstting',
                     component: resolve => require(['../components/page/SysSetting.vue'], resolve),
                     meta: { title: '系统设置' }
                 },
                 {
-                    path: '/table',
+                    path: 'table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
                     meta: { title: '试题题库' }
                 },

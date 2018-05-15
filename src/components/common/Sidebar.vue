@@ -32,26 +32,26 @@
                 items: [
                     {
                         icon: 'el-icon-setting',
-                        index: 'dashboard',
+                        index: '/admin/dashboard',
                         title: '系统首页'
                     },
                     {
                         icon: 'el-icon-setting',
-                        index: 'sysstting',
+                        index: '/admin/sysstting',
                         title: '系统设置'
                     },
                     {
                         icon: 'el-icon-tickets',
-                        index: 'table',
+                        index: '/admin/table',
                         title: '试题题库'
                     },
                     {
                         icon: 'el-icon-info',
-                        index: 'tabs',
+                        index: '/admin/tabs',
                         title: '用户管理'
                     },{
                         icon: 'el-icon-view',
-                        index: 'scores',
+                        index: '/admin/scores',
                         title: '积分管理'
                     },
                     // {
@@ -88,11 +88,11 @@
                     //     index: '404',
                     //     title: '404页面'
                     // }
-                    {
-                        icon: 'el-icon-star-on',
-                        index: 'charts',
-                        title: 'schart图表'
-                    }
+                    // {
+                    //     icon: 'el-icon-star-on',
+                    //     index: 'charts',
+                    //     title: 'schart图表'
+                    // }
                     // ,
                     // {
                     //     icon: 'el-icon-warning',
@@ -104,7 +104,8 @@
         },
         computed:{
             onRoutes(){
-                return this.$route.path.replace('/','');
+           //  return this.$route.path.replace('/','');
+                return this.$route.fullPath;
             }
         },
         created(){
