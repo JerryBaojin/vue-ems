@@ -38,12 +38,13 @@ export default new Router({
                     path: 'scores',
                     component: resolve => require(['../components/page/scores.vue'], resolve),
                     meta: { title: '积分管理' }
-                },
-                {
-                    path: 'form',
-                    component: resolve => require(['../components/page/BaseForm.vue'], resolve),
-                    meta: { title: '基本表单' }
                   }
+                // },
+                // {
+                //     path: 'form',
+                //     component: resolve => require(['../components/page/BaseForm.vue'], resolve),
+                //     meta: { title: '基本表单' }
+
                 // },
                 // {
                 //     // 富文本编辑器组件
@@ -83,6 +84,23 @@ export default new Router({
                 // }
             ]
         },
+        {
+        path: '/front',
+        meta: { title: '用户答题' },
+        component: resolve => require(['../components/common/FrontHome.vue'], resolve),
+        children:[
+            {
+                path: 'index',
+                component: resolve => require(['../components/front/index.vue'], resolve),
+                meta: { title: '答题页面' }
+            },
+            {
+                path: 'login',
+                component: resolve => require(['../components/front/login.vue'], resolve),
+                meta: { title: '注册页面' }
+            }
+          ]
+          },
         {
             path: '/login',
             component: resolve => require(['../components/page/Login.vue'], resolve)

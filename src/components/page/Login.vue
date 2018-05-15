@@ -62,7 +62,7 @@
 
                           if(res.data.statusCode==200){
                             localStorage.setItem('ms_username',this.ruleForm.username);
-                            this.$router.push('/');
+                            this.$router.push('/admin/dashboard');
                           }else{
                             let p="";
                             res.data.statusCode==400?p="用户名错误!":p="密码错误!";
