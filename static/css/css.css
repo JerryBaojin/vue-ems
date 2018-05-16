@@ -72,6 +72,7 @@ a:hover {
 /*main*/
 
 .bg {
+	height: 100%;
 	background: url(../../../static/img/index_bg.png) no-repeat;
 	background-position: left top;
 	background-size: 100%, cover;
@@ -307,7 +308,7 @@ header .f0 {
 	text-align: center;
 }
 
-.btn_bg a {
+.btn_bg{
 	background: url("../../../static/img/btn_bg.png")/*tpa=images/btn_bg.png*/
 	no-repeat;
 	width: 493px;

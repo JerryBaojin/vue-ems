@@ -7,7 +7,7 @@ export default new Router({
     routes: [
         {
             path: '/',
-            redirect: '/dashboard'
+            redirect: '/admin/dashboard'
         },
         {
             path: '/admin',
@@ -92,7 +92,37 @@ export default new Router({
             {
                 path: 'index',
                 component: resolve => require(['../components/front/index.vue'], resolve),
+                meta: { title: '选择页面' }
+            },
+            {
+                path: 'main',
+                name: 'main',
+                component: resolve => require(['../components/front/Main.vue'], resolve),
                 meta: { title: '答题页面' }
+            },
+            {
+                path: 'rank',
+                name: 'rank',
+                component: resolve => require(['../components/front/Rank.vue'], resolve),
+                meta: { title: '积分排行' }
+            },
+            {
+                path: 'person',
+                name: 'person',
+                component: resolve => require(['../components/front/person.vue'], resolve),
+                meta: { title: '个人中心' }
+            },
+            {
+                path: 'ponit',
+                name: 'ponit',
+                component: resolve => require(['../components/front/ponits.vue'], resolve),
+                meta: { title: '我的积分' }
+            },
+            {
+                path: 'pwd',
+                name: 'pwd',
+                component: resolve => require(['../components/front/pwd.vue'], resolve),
+                meta: { title: '修改密码' }
             },
             {
                 path: 'login',
@@ -113,10 +143,10 @@ export default new Router({
             path: '/403',
             component: resolve => require(['../components/page/403.vue'], resolve)
         }
-        // ,
-        // {
-        //     path: '*',
-        //     redirect: '/404'
-        // }
+        ,
+        {
+            path: '*',
+            redirect: '/404'
+        }
     ]
 })

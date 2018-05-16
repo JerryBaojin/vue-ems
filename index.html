@@ -3,14 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>市纪委每日一题后台管理系统</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+
     <meta name="keywords" content="flyingBugger" />
     <meta name="description" content="flyingBugger" />
-  
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="white">
-    <meta name="format-detection" content="telephone=no">
-</head>
+
+  <meta content='target-densitydpi=device-dpi, width=640' name='viewport'>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="white">
+  <meta name="format-detection" content="telephone=no">
+
+  </head>
 <body>
 <div id="app"></div>
 <!--<script src="./static/js/vendor.dll.js"></script>-->
@@ -23,6 +25,17 @@
         s.parentNode.insertBefore(hm, s);
     })();
 </script> -->
-
+<script type="text/javascript">
+var userScalable = "no";
+var ins = "";
+(function () {
+  if (window.devicePixelRatio === 1.5) {
+    userScalable = "yes";
+    ins = "initial-scale=0.5"
+  }
+  var text = "<meta content='" + ins + ", target-densitydpi=device-dpi, width=640,user-scalable=" + userScalable + "' name='viewport'>";
+  document.write(text);
+})();
+</script>
 </body>
 </html>
