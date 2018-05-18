@@ -1,221 +1,24 @@
 <template >
   <div class="">
     <div class="login-box">
-
 		<div class="box-con tran">
-
 			<div class="login-con f-l">
-
 				<div class="form-group">
-
-					<input type="text" placeholder="邮箱/手机号码"/>
-
-					<span class="error-notic">邮箱/手机号码不正确</span>
-
+					<input type="text" v-model="counts" @focus="reset" placeholder="账号"/>
+					<span v-if="validate.counts" class="error-notic">不存在该账号!</span>
 				</div>
-
 				<div class="form-group">
-
-					<input type="password" placeholder="密码">
-
-					<span class="error-notic">密码不正确</span>
-
+					<input v-model="pwd" type="password" @focus="reset" placeholder="密码">
+					<span v-if="validate.pwd" class="error-notic">密码不正确</span>
 				</div>
-
 				<div class="form-group">
-
 					<button type="submit" class="tran pr">
-
-						<a href="index.html" class="tran">登录</a>
-
+						<div @click="submit()" class="tran">登录</div>
 					</button>
-
 				</div>
-
 				<div class="from-line"></div>
-
-				<div class="form-group">
-
-					<a href="javascript:;" class="move-signup a-tag tran blue-border">还没有帐号？免费注册</a>
-
-				</div>
-
-				<div class="form-group">
-
-					<a href="javascript:;" class="move-reset a-tag tran">忘记密码？重置</a>
-
-				</div>
 			</div>
-
-			<!-- 登录 -->
-
-			<div class="signup f-l">
-
-				<div class="form-group">
-
-					<div class="signup-form">
-
-						<input type="text" placeholder="邮箱" class="email-mobile" onblur="verify.verifyEmail(this)">
-
-						<a href="javascript:;" class="signup-select">手机注册</a>
-
-					</div>
-
-					<span class="error-notic">邮箱格式不正确</span>
-
-				</div>
-
-				<div class="signup-email">
-
-					<div class="form-group">
-
-						<input type="text" placeholder="您的名字">
-
-					</div>
-
-					<div class="form-group">
-
-						<input type="password" placeholder="密码（字母、数字，至少6位）" onblur="verify.PasswordLenght(this)">
-
-						<span class="error-notic">密码长度不够</span>
-
-					</div>
-
-					<div class="form-group">
-
-						<button type="submit" class="tran pr">
-
-							<a href="javascript:;" class="tran">注册</a>
-
-						</button>
-
-					</div>
-
-					<p class="view-clause">点击注册，即同意我们的 <a href="#">用户隐私条款</a></p>
-
-				</div><!-- 邮箱注册 -->
-
-				<div class="signup-tel" style="display:none">
-
-					<div class="signup-form" id="message-inf" style="display:none">
-
-						<input type="text" placeholder="短信验证码" style="width:180px;" onblur="verify.VerifyCount(this)">
-
-						<a href="javascript:;" class="reacquire">重新获取（59）</a>
-
-						<span class="error-notic">验证码输入错误</span>
-
-					</div>
-
-					<div class="form-group">
-
-						<button type="submit" class="tran get-message pr">
-
-							<a href="javascript:;" class="tran">获取短信验证码</a>
-
-						</button>
-
-					</div>
-
-				</div><!-- 手机号码注册 -->
-
-				<div class="from-line"></div>
-
-				<div class="form-group">
-
-					<a href="javascript:;" class="move-login a-tag tran blue-border">已有帐号？登录</a>
-
-				</div>
-
-			</div>
-
-			<!-- 注册 -->
-
-
-			<div class="mimachongzhi f-l">
-
-				<div class="form-group">
-
-					<input type="text" placeholder="请输入您的邮箱地址">
-
-					<span class="error-notic">邮箱格式不正确</span>
-
-				</div>
-
-				<div class="form-group">
-
-					<button type="submit" class="tran pr">
-
-						<a href="javascript:;" class="tran">发送重置密码邮件</a>
-
-					</button>
-
-				</div>
-
-				<div class="from-line"></div>
-
-				<div class="form-group">
-
-					<a href="javascript:;" class="move-signup	a-tag tran blue-border">还没有帐号？免费注册</a>
-
-				</div>
-
-				<div class="form-group">
-
-					<a href="javascript:;" class="move-login a-tag tran">已有帐号？登录</a>
-
-				</div>
-
-			</div>
-
-			<!-- 密码重置 -->
-
-
-
-			<div class="mobile-success f-l">
-
-				<p>手机号 <span>186****7580</span> 验证成功</p>
-
-				<p>请完善您的账号信息，您也可以<a href="#">绑定现有账号</a></p>
-
-				<div class="form-group">
-
-					<input type="text" placeholder="邮箱" class="email-mobile" onblur="verify.verifyEmail(this)"/>
-
-					<span class="error-notic">邮箱格式不正确</span>
-
-				</div>
-
-				<div class="form-group">
-
-					<input type="text" placeholder="您的名字">
-
-				</div>
-
-				<div class="form-group">
-
-					<input type="password" placeholder="密码（字母、数字，至少6位）" onblur="verify.PasswordLenght(this)"/>
-
-					<span class="error-notic">密码长度不够</span>
-
-				</div>
-
-				<div class="form-group">
-
-					<button type="submit" class="tran pr">
-
-						<a href="javascript:;" class="tran">注册</a>
-
-					</button>
-
-				</div>
-
-			</div>
-
-			<!-- 手机注册成功添补信息 -->
-
 		</div>
-
 	</div>
   </div>
 </template>
@@ -223,8 +26,79 @@
   export default {
     data(){
       return{
-        a:1
+        url:"api/frontUser.php",
+        counts:'',
+        pwd:"",
+        validate:{
+          counts:false,
+          pwd:false
+        }
       }
+    },
+    methods:{
+      reset(){
+        this.validate={
+          counts:false,
+          pwd:false
+        }
+      },
+      submit(){
+        this.$axios.post(this.url,{
+          action:"auth",
+          UID:this.counts,
+          pwd:this.pwd,
+          openid:'b'
+        }).then(res=>{
+            switch (res.data) {
+                case 100:
+                //未绑定微信
+                break;
+                case 101:
+                this.validate.counts=true;
+                break;
+                case 102:
+                this.validate.pwd=true;
+                break;
+                case 200:
+                  this.$message.success("登录成功!");
+                  this.$router.push({name:"person",params:{UID:this.counts}})
+                  break;
+                case 103:
+                    this.$message.error("网络错误!");
+                  break;
+              default:
+
+            }
+        }).then(e=>{
+
+        })
+      }
+    },
+    mounted(){
+
+    const openid=this.$route.query.openid;
+      //openid
     }
   }
 </script>
+<style media="screen">
+  .el-message__content,.el-message__icon{
+    font-size: 30px;
+  }
+  .error-notic{
+    display: block !important;
+    color: #ff4e00;
+    margin-left: 5%;
+    font-size: 30px;
+  }
+  .login-con{
+    width: 560px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    height: 300px;
+  }
+</style>

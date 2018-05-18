@@ -2,42 +2,13 @@
   <section id="ranking"> <span id="ranking_title">我的排行：3</span>
     <section id="ranking_list">
 
-      <section class="box">
-        <section title="1" class="col_1">1</section>
-        <section class="col_2"><img src="images/head.png"></section>
-        <section class="col_3">排行名字</section>
-        <section class="col_4">积分：5000</section>
+      <section class="box" v-for="(value,index) in datas">
+        <section :title="index+1" class="col_1">{{index+1}}</section>
+        <section class="col_2"><img :src="value.headImg"></section>
+        <section class="col_3">{{value.name}}</section>
+        <section class="col_4">积分：{{value.scores}}</section>
       </section>
-      <section class="box">
-        <section title="2" class="col_1">2</section>
-        <section class="col_2"><img src="images/head.png"></section>
-        <section class="col_3">排行名字</section>
-        <section class="col_4">积分：3000</section>
-      </section>
-      <section class="box cur">
-        <section title="3" class="col_1">3</section>
-        <section class="col_2"><img src="images/head.png"></section>
-        <section class="col_3">小萌</section>
-        <section class="col_4">积分：2050</section>
-      </section>
-      <section class="box">
-        <section class="col_1">4</section>
-        <section class="col_2"><img src="images/head.png"></section>
-        <section class="col_3">排行名字</section>
-        <section class="col_4">积分：1800</section>
-      </section>
-      <section class="box">
-        <section class="col_1">5</section>
-        <section class="col_2"><img src="images/head.png"></section>
-        <section class="col_3">排行名字</section>
-        <section class="col_4">积分：1200</section>
-      </section>
-        <section class="box">
-        <section class="col_1">6</section>
-        <section class="col_2"><img src="images/head.png"></section>
-        <section class="col_3">排行名字</section>
-        <section class="col_4">积分：1000</section>
-      </section>
+
     </section>
       <router-link to="index" id="play_game">返回答题</router-link>
  </section>
@@ -47,6 +18,7 @@ import Wx from './WeixinJssdk';
   export default {
     data(){
       return{
+        datas:[]
       }
     },
     methods:{
@@ -55,6 +27,12 @@ import Wx from './WeixinJssdk';
       }
     },
     mounted(){
+      this.$axios.post("api/frontUser.php",{
+        action:"getRank"
+      }).then(res=>{
+        this.datas=res.data;
+        console.log(this.datas);
+      })
       /*
       let dates={
       "title":"甜城味·内江美食地图",

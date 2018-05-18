@@ -10,9 +10,7 @@
   					</span>
   					<span class="f-r">
               <router-link to="Rank"><img src="../../../static/img/ranking.png" alt=""></router-link>
-  			   	<ul class="countdown">
-          			<li> <span class="seconds">00</span></li>
-  					</ul>
+  			   
   					</span>
   				</div>
   				<div class="title">
@@ -20,7 +18,7 @@
   				</div>
   			</header>
         <v-questions :msg="type"></v-questions>
-        
+
   </div>
 </template>
 <script type="text/javascript">

@@ -6,15 +6,12 @@
 		</div>
 
 		<div class="my_points">
-		    <div class="all_points"><img src="images/points_img.jpg"><span><b>600</b>积分</span></div>
-		    <p>
-		        <span>答题赢积分</span><em>+100</em>
-		        <span class="sp_1"><a href=""></a></span><time>2015-10-10 05:40:10</time>
+		    <p v-for="items in infos">
+		        <span>{{items.type}}</span><em>+{{items.result}}</em>
+		        <span class="sp_1"><a href=""></a></span><time>{{items.times}}</time>
 		    </p>
-
-		    <p>
-		        <span>消费抵扣积分</span><em>-13</em>
-		        <span class="sp_1"><a href=""></a></span><time>2015-10-10 05:40:10</time>
+        <p v-if="hasMore" style="color:black;text-align: center;" @click="loadMore">
+		       点击加载更多
 		    </p>
 
 		</div>
@@ -22,5 +19,49 @@
 </template>
 
 <script type="text/javascript">
-
+export default {
+  data(){
+    return{
+        hasMore:false,
+        infos:[],
+        index:0
+    }
+  },
+  methods:{
+    loadMore(){
+      if(this.hasMore){
+        this.index+=10;
+      }
+      this.getDatas();
+    },
+    getDatas(){
+      this.$axios.post("api/frontUser.php",{
+        action:"viewScores",
+        uid:localStorage.getItem("token"),
+        index:this.index
+      }).then(res=>{
+        res.data.map((v,k)=>{
+          if(/,/.test(v.Qid)){
+            res.data[k]['type']="测试题";
+          }else{
+            res.data[k]['type']="每日一题";
+          }
+        })
+        res.data.length==10?this.hasMore=true:this.hasMore=false;
+        this.infos=this.infos.concat(res.data);
+      }).catch(e=>{
+        console.log(e);
+      })
+    }
+  },
+  mounted(){
+    this.getDatas();
+  }
+}
 </script>
+<style media="screen">
+.my_points{
+  height: 800px;
+  overflow: scroll;
+}
+</style>

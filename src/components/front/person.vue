@@ -11,15 +11,14 @@
 					<div class="person_top">
 						<div class="per_con">
 							<div class="user_photo">
-
-								<img src="http://thirdwx.qlogo.cn/mmopen/shzMNMd01wmwLrhx4vkuPicdV6fYxBtgeqoGNffqDS8pCt7JnibwgyqmNIJnuonBXWCnoy6msQp7ESOZwJzv4W6rYd7q1uuRvo/132">
-								<span><strong>小萌</strong></span>
+								<img :src="info.headImg">
+								<span><strong>{{info.name}}</strong></span>
 							</div>
 							<div class="name_right">
-								<p class="p1">会员ID：18921120000</p>
-								<p>注册时间：2015-11-11</p>
-								<p class="p2">我的积分：600</p>
-								<p>答题数：200</p>
+								<p class="p1">会员ID：{{info.UID}}</p>
+								<p>注册时间：{{info.RegistTime}}</p>
+								<p class="p2">我的积分：{{info.scores}}</p>
+								<p>答题数：{{info.counts}}</p>
 							</div>
 						</div>
 					</div>
@@ -37,6 +36,28 @@
 			</div>
 		</div>
 </template>
-<script type="text/javascript">
 
+<script type="text/javascript">
+  export default {
+    data(){
+      return{
+          url:"api/frontUser.php",
+          info:{}
+      }
+    },
+    mounted(){
+//      const uid=this.$route.params.UID;
+        const uid=1;
+        this.$axios.post(this.url,{
+          action:"getUserInfo",
+          uid
+        }).then(res=>{
+          this.info=res.data;
+          localStorage.setItem("token",uid);
+          localStorage.setItem(uid,JSON.stringify(res.data));
+        }).catch(e=>{
+          console.log(e)
+        })
+    }
+  }
 </script>
