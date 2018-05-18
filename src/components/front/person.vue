@@ -46,8 +46,8 @@
       }
     },
     mounted(){
-//      const uid=this.$route.params.UID;
-        const uid=1;
+    const uid=this.$route.params.UID;
+    !uid?this.$router.push({path:"/front/login"}):null;
         this.$axios.post(this.url,{
           action:"getUserInfo",
           uid

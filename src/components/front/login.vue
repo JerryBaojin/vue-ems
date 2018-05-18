@@ -26,6 +26,7 @@
   export default {
     data(){
       return{
+        openid:"",
         url:"api/frontUser.php",
         counts:'',
         pwd:"",
@@ -36,6 +37,7 @@
       }
     },
     methods:{
+
       reset(){
         this.validate={
           counts:false,
@@ -43,15 +45,20 @@
         }
       },
       submit(){
+        if (this.openid=='') {
+            location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
+            return false;
+        }
         this.$axios.post(this.url,{
           action:"auth",
           UID:this.counts,
           pwd:this.pwd,
-          openid:'b'
+          openid:this.openid
         }).then(res=>{
             switch (res.data) {
                 case 100:
                 //未绑定微信
+                location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
                 break;
                 case 101:
                 this.validate.counts=true;
@@ -74,9 +81,17 @@
         })
       }
     },
+    created(){
+      let that=this;
+
+      if(this.$route.query.hasOwnProperty('openid')){
+          that.openid=this.$route.query.openid;
+      }else{
+          location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
+      }
+    },
     mounted(){
 
-    const openid=this.$route.query.openid;
       //openid
     }
   }
