@@ -74,6 +74,25 @@ export default {
       }).catch(e=>{
         console.log(e);
       })
+    },convert(data){
+      switch (data) {
+          case '1':
+          data="A";
+          break;
+          case '2':
+          data="B";
+          break;
+          case '3':
+          data="C";
+          break;
+          case '4':
+          data="D";
+          break;
+          case '5':
+          data="E";
+          break;
+      }
+      return data;
     },
     counterStart(){
       let that=this;
@@ -110,7 +129,6 @@ export default {
       },1000)
     },
     sub(index){
-
             let that=this;
             if(!that.abledToClick){
             return false;
@@ -123,7 +141,7 @@ export default {
             }
             let __nowAnswers=[];
             for(let k=0;k<ops.length;k++){
-              __nowAnswers.push(ops[k].dataset.pid)
+              __nowAnswers.push(this.convert(ops[k].dataset.pid));
             }
             this.questions[index].clickAble=true;
             this.questions[index]['correctType'].length>=2?dot=",":dot="";
@@ -168,10 +186,10 @@ export default {
       action:"getQuestions",
       tag:this.msg
         }).then(res=>{
-
           res.data.map((v,k)=>{
             this.qid.push(v.id)
             res.data[k]['answer']=v.answer.split("###");
+            res.data[k]['answer'].shift();
               res.data[k].clickAble=false;
               if(/,/.test(v.correctType)){
                 res.data[k]['type']="checkbox"
@@ -180,7 +198,6 @@ export default {
               }
           })
         this.questions=res.data;
-
         this.totalTimesLeft=Number(this.config.perconunter)*res.data.length;
         this.counterStart();
     }).catch(e=>{

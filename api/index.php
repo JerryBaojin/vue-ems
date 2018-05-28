@@ -29,15 +29,15 @@
             echo json_encode($_resDates);
         break;
       case 'update':
-          if(strlen($datas['details']['correct'])==1){
-            rconvertType($datas['details']['correct']);
-          }elseif(strpos($datas['details']['correct'],",")) {
-            $_date=explode(",",$datas['details']['correct']);
-            foreach ($_date as $key => $value) {
-              $_date[$key]=rconvertType($value);
-            }
-            $datas['details']['correct']=implode(",",$_date);
-          }
+          // if(strlen($datas['details']['correct'])==1){
+          //   rconvertType($datas['details']['correct']);
+          // }elseif(strpos($datas['details']['correct'],",")) {
+          //   $_date=explode(",",$datas['details']['correct']);
+          //   foreach ($_date as $key => $value) {
+          //     $_date[$key]=rconvertType($value);
+          //   }
+          //   $datas['details']['correct']=implode(",",$_date);
+          // }
           $sql="UPDATE `quiz` SET question=?,answer=?,correct=? WHERE (`id`=?)";
           $questions=$db->prepare($sql);
           $questions->execute(array($datas['details']['question'],$datas['details']['answer'],$datas['details']['correct'],$datas['details']['id']));
@@ -95,7 +95,11 @@
     # code...
   }
 
-  if (!empty($_FILES) && $_FILES['file']['error']===0) {
+  if (!empty($_FILES)) {
+    if($_FILES['file']['error']!==0){
+      echo 300;
+      die;
+    }
     preg_match('/[^.]+$/',$_FILES['file']['name'],$result);
     if($result[0]!='csv'){
       echo 0;
@@ -107,13 +111,15 @@
       if (($handle = fopen($newName,"r")) !== FALSE) {
           while (($data = fgetcsv($handle,1000,",")) !== FALSE) {
           //
+
             foreach ( $data as $key => $value) {
              $data[$key]=iconv('gb2312','utf-8',$value);
             }
-
+  //          var_dump($data[3]);
             $c=$data[3];
-            rconvertType($c);
-             $__InsertSql.="('{$data[1]}','{$data[2]}','$c'),";
+             //$__InsertSql.="('{$data[1]}','{$data[2]}','$c'),";
+             $Q="###A.{$data[1]}###B.{$data[2]}###C.{$data[3]}";
+             $__InsertSql.="('{$data[0]}',' $Q','{$data[4]}'),";
           }
 
         echo $db->exec(substr($__InsertSql,0,strlen($__InsertSql)-1));

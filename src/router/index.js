@@ -25,6 +25,11 @@ export default new Router({
                     meta: { title: '系统设置' }
                 },
                 {
+                    path: 'adminuser',
+                    component: resolve => require(['../components/page/AdminUser.vue'], resolve),
+                    meta: { title: '管理员管理' }
+                },
+                {
                     path: 'table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
                     meta: { title: '试题题库' }
@@ -43,48 +48,48 @@ export default new Router({
         },
         {
         path: '/front',
-        meta: { title: '用户答题' },
+        meta: { title: '用户答题'},
         component: resolve => require(['../components/common/FrontHome.vue'], resolve),
         children:[
             {
                 path: 'index',
                 component: resolve => require(['../components/front/index.vue'], resolve),
-                meta: { title: '选择页面' }
+                meta: { title: '选择页面',index:0}
             },
             {
                 path: 'main',
                 name: 'main',
                 component: resolve => require(['../components/front/Main.vue'], resolve),
-                meta: { title: '答题页面' }
+                meta: { title: '答题页面',index:1 }
             },
             {
                 path: 'rank',
                 name: 'rank',
                 component: resolve => require(['../components/front/Rank.vue'], resolve),
-                meta: { title: '积分排行' }
+                meta: { title: '积分排行',index:2 }
             },
             {
                 path: 'person',
                 name: 'person',
                 component: resolve => require(['../components/front/person.vue'], resolve),
-                meta: { title: '个人中心' }
+                meta: { title: '个人中心',index:3 }
             },
             {
                 path: 'ponit',
                 name: 'ponit',
                 component: resolve => require(['../components/front/ponits.vue'], resolve),
-                meta: { title: '我的积分' }
+                meta: { title: '我的积分',index:4 }
             },
             {
                 path: 'pwd',
                 name: 'pwd',
                 component: resolve => require(['../components/front/pwd.vue'], resolve),
-                meta: { title: '修改密码' }
+                meta: { title: '修改密码',index:5}
             },
             {
                 path: 'login',
                 component: resolve => require(['../components/front/login.vue'], resolve),
-                meta: { title: '注册页面' }
+                meta: { title: '注册页面',index:6 }
             }
           ]
           },

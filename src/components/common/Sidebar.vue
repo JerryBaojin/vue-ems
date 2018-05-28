@@ -53,6 +53,10 @@
                         icon: 'el-icon-view',
                         index: '/admin/scores',
                         title: '积分管理'
+                    },{
+                        icon: 'el-icon-document',
+                        index: '/admin/adminuser',
+                        title: '管理员管理'
                     },
                     // {
                     //     icon: 'el-icon-date',

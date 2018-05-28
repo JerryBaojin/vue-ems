@@ -75,32 +75,34 @@
         $tempD=$db->prepare($sql);
         $tempD->execute(array($datas['openid']));
         $userInfo=$tempD->fetch(PDO::FETCH_ASSOC);
-
+        $msg="";
         if(!$userInfo){
-          echo 100;
-          die;
-        }
-
-        $sql="select pwd,UID  from table_user where UID=? limit 1";
-        $tempT=$db->prepare($sql);
-        $tempT->execute(array($datas['UID']));
-        $pwd=$tempT->fetch(PDO::FETCH_ASSOC);
-        if(!$pwd){
-          echo 101;
-          die;
+          $msg=array("erroCode"=>100);
         }else{
-          if($pwd['pwd']!=$datas['pwd']){
-            echo 102;
-            die;
+          $sql="select pwd,UID  from table_user where phone=? limit 1";
+          $tempT=$db->prepare($sql);
+          $tempT->execute(array($datas['phone']));
+          $pwd=$tempT->fetch(PDO::FETCH_ASSOC);
+
+          if(!$pwd){
+            $msg=array("erroCode"=>101);
           }else{
-            $sql="UPDATE users SET uid ='{$datas['UID']}' where openid = '{$datas['openid']}'";
-            if($db->query($sql)){
-              echo 200;
+            if($pwd['pwd']!=$datas['pwd']){
+              $msg=array("erroCode"=>102);
             }else{
-              echo 103;
+              $sql="UPDATE users SET uid ='{$pwd['UID']}' where openid = '{$datas['openid']}'";
+              if($db->query($sql)){
+                $msg=array(
+                  "erroCode"=>200,
+                  "uid"=>$pwd['UID']
+                );
+              }else{
+                $msg=array("erroCode"=>103);
+              }
             }
           }
         }
+        echo json_encode($msg);
 
         break;
         case 'authCount':
@@ -109,6 +111,17 @@
         $tempD->execute(array($datas['UID']));
         $userInfo=$tempD->fetch(PDO::FETCH_ASSOC);
           break;
+      case 'wxuser':
+          $sql="select *  from users where openid=? limit 1";
+          $tempD=$db->prepare($sql);
+          $tempD->execute(array($datas['openid']));
+          $userInfo=$tempD->fetch(PDO::FETCH_ASSOC);
+
+          if(!$userInfo){
+            echo 100;
+            die;
+          }
+        break;
       case 'recordTypes':
             $db->beginTransaction();
             try {
