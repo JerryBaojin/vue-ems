@@ -17,8 +17,8 @@
          仅工作日可答题!
       </div>
     	<div class="hm_btn" v-if="tag">
-    		<div class="btn_bg"     @click="toMain('single')">进入每日一题</div>
-    		<div  v-cloak v-show="configs.delivery!='false'" class="btn_bg" @click="toMain('muti')">进入测试</div>
+    		<div class="btn_bg"  v-show="false"   @click="toMain('single')">进入每日一题</div>
+    		<div  v-cloak class="btn_bg" @click="toMain('muti')">进入测试</div>
     	</div>
 
     </div>

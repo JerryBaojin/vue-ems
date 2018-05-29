@@ -228,6 +228,7 @@
         }
       ).then(res=>{
         delete res.data.id;
+        res.data.editAble==1?res.data.editAble=true:res.data.editAble=false;
         res.data.conunter=Number(res.data.conunter);
         res.data.perconunter=Number(res.data.perconunter);
         res.data.timu=Number(res.data.timu);

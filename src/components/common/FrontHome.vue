@@ -34,6 +34,7 @@
       }
     },
     mounted(){
+      document.title="在线答题系统";
       var userScalable = "no";
       var ins = "";
       (function () {
