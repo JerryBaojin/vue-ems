@@ -95,7 +95,6 @@
     },
     created(){
       let that=this;
-
       if(this.$route.query.hasOwnProperty('openid')){
           that.openid=this.$route.query.openid;
       }else{

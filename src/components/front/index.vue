@@ -39,6 +39,17 @@ import Wx from './WeixinJssdk';
 
     },
     methods:{
+      getDates(parmas){
+        return new Promise((resolve,reject)=>{
+          this.$axios.post("api/sys.php",{
+            ...parmas
+          }).then((res)=>{
+              resolve(res.data)
+          }).catch(e=>{
+            console.log(e)
+          })
+        })
+      },
       toMain(tag){
         //查询此人是否今天已经答题过
         this.$axios.post("api/frontUser.php",{
@@ -57,18 +68,37 @@ import Wx from './WeixinJssdk';
         })
       }
     },
+
     mounted(){
 
-      this.$axios.post("api/sys.php",{
-        action:"frontgetConfig"
-      }).then(res=>{
-        this.configs=res.data;
-    //    (this.configs.work.result.workmk==1 || this.configs.work.success!=1)?this.tag=true:this.tag=false;
-        sessionStorage.setItem("syssetting",JSON.stringify(res.data));
+      if(this.$route.query.hasOwnProperty('openid')){
+          this.openid=this.$route.query.openid;
+          //存储为session
+          sessionStorage.setItem("openid",this.openid);
+          let requestAuthUser=async ()=>{
 
-      }).catch(e=>{
-        console.log(e);
-      })
+                let user=this.getDates({action:"qUser",openid:this.openid})
+                user.then(res=>{
+                  if(res.errorCode!=200){
+                    location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
+                    return false;
+                  }else{
+                    sessionStorage.setItem("userInfo",JSON.stringify(res.datas));
+                  }
+                });
+                let SysSetting=this.getDates({action:"frontgetConfig"});
+                SysSetting.then(res=>{
+                  this.configs=res;
+                  sessionStorage.setItem("syssetting",JSON.stringify(res));
+                })
+              }
+          requestAuthUser();
+
+      }else{
+          location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
+      }
+
+
       /*
       let dates={
       "title":"甜城味·内江美食地图",

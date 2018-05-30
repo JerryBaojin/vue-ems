@@ -93,10 +93,12 @@ export default new Router({
             }
           ]
           },
+          /*
         {
             path: '/login',
             component: resolve => require(['../components/page/Login.vue'], resolve)
         },
+        */
         {
             path: '/404',
             component: resolve => require(['../components/page/404.vue'], resolve)

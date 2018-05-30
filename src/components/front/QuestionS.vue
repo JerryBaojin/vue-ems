@@ -24,7 +24,15 @@
               </div>
             </div>
             <div v-if="isLast" class="content">
+                  <div class="finaly">
+                    <div class="">
+                      恭喜你获得{{scores}}分!
+                    </div>
+                    <div v-if="weChat">
+                      获得5元的现金红包!
+                    </div>
 
+                  </div>
                       <el-button size="medium" v-for="(v,i) in doneGrade" :key="i" :type="v.res==1?'success':'danger'" @click="checkQuestion(i)">{{i+1}}</el-button>
             </div>
               <i v-show="checkResult.isNow" :class="checkResult.result?'el-icon-success ico1':'el-icon-error ico2'" ></i>
@@ -50,6 +58,18 @@ export default {
         correctA:[],
         doneGrade:[],
         totalTimesLeft:0
+    }
+  },
+  computed:{
+    scores(){
+        return this.doneGrade.filter((v)=>v.res==1).length*JSON.parse(sessionStorage.getItem('syssetting')).scoreR;
+    },
+    weChat(){
+      if (JSON.parse(sessionStorage.getItem('syssetting')).model==1) {
+        return true
+      }else{
+        return false;
+      }
     }
   },
   watch:{
@@ -117,26 +137,34 @@ export default {
       }
     },
     syncDates(){
-      const infos=Array.from(this.correctA);
-      let that=this;
-      let str="";
-      let __scores=infos.length*2+(this.questions.length-infos.length)*1;
-      infos.length>0?str=`恭喜你答对${infos.length}道题,获得${__scores}积分!`:str=`很遗憾你没有回答正确的题,获得${__scores}积分!`;
-      this.msg!="muti"?str+="请明天再来!":'';
-      this.$alert(str,  {
-        confirmButtonText: '确定',
-        callback: action => {
+      let userAnser=new Array();
+      //count per question's answer
+      for (let i = 0; i < this.questions.length; i++) {
+          let  ops=document.querySelectorAll(`#block${i} input:checked`);
+          let __nowAnswers=[];
+          let res=0;
+          for(let k=0;k<ops.length;k++){
+            __nowAnswers.push(ops[k].dataset.answer);
+          }
+          this.questions[i].correctType.join("")==__nowAnswers.sort().join("")?res=1:res=0;
+          this.doneGrade.push({
+            index:i,
+            choosed:__nowAnswers.sort(),
+            res,
+            correct:this.questions[i].correctType
+          })
+      }
+              this.$emit("disableEdit",false);//禁止step
+              this.isLast=true;
+              this.totalTimesLeft='';
+              clearInterval(this.timer);
 
-        }
-      });
       this.$axios.post(this.url,{
         action:"saveQinfos",
-        uid:localStorage.getItem("token"),
-        scores:__scores,
-        Qid:this.qid,
-        type:this.msg
+        uid:sessionStorage.getItem("openid"),
+        datas:this.doneGrade
       }).then(res=>{
-        clearInterval(that.timer)
+
         that.abledToClick=false;
 
         if(res.data==0){
@@ -174,27 +202,7 @@ export default {
         }else{
           that.totalTimesLeft="时间到!";
           //时间到 未答的题不作处理!
-          if(this.msg=="single"){
-              //直接提交
-              this.syncDates();
-              this.checkResult={...this.checkResult,isNow:true,result:false,toggle:true};
-          }else{
-            //多选
-            that.correctA=[];
-            for (let i = 0; i <= that.current; i++) {
-                let dot="";
-                let  ops=document.querySelectorAll(`#block${i} input:checked`);
-                let __nowAnswers=[];
-                for(let k=0;k<ops.length;k++){
-                  __nowAnswers.push(ops[k].dataset.pid)
-                }
-                that.questions[i]['correctType'].length>=2?dot=",":dot="";
-                if(__nowAnswers.join(dot)==that.questions[i]['correctType']){
-                  that.correctA.push(that.questions[i].id);
-                }
-            }
-            this.syncDates();
-          }
+          this.syncDates();
 
         }
 
@@ -208,27 +216,8 @@ export default {
                     let dot="";
                     let userAnser=new Array();
                     //count per question's answer
-                    for (let i = 0; i < this.questions.length; i++) {
-                        let  ops=document.querySelectorAll(`#block${i} input:checked`);
-                        let __nowAnswers=[];
-                        let res=0;
-                        for(let k=0;k<ops.length;k++){
-                          __nowAnswers.push(ops[k].dataset.answer);
-                        }
-                        this.questions[i].correctType.join("")==__nowAnswers.sort().join("")?res=1:res=0;
-                        this.doneGrade.push({
-                          index:i,
-                          choosed:__nowAnswers.sort(),
-                          res,
-                          correct:this.questions[i].correctType
-                        })
+                    this.syncDates();
                     }
-                            this.$emit("disableEdit",false);//禁止step
-                            this.isLast=true;
-                            this.totalTimesLeft='';
-                            clearInterval(this.timer)
-                    }
-
               }
             else{
               let  ops=document.querySelectorAll(`#block${index} input:checked`);
@@ -245,6 +234,7 @@ export default {
   },
   props:['msg'],
   mounted(){
+      sessionStorage.getItem("openid")?null:this.$router.push("/front/index");
     Array.prototype.shunt=function(){
       //随机洗牌算法
     	let __this=this;
@@ -342,6 +332,12 @@ li{
     margin-top: -119px;
     color: red;
     opacity: 0.7;
+  }
+  .finaly{
+    color: red;
+    text-align: center;
+    margin: 10px;
+
   }
   .count{
     text-indent: 3%;

@@ -4,7 +4,7 @@
   				<div class="hm_icon">
   					<span class="f-l">
               <router-link to="person">
-    						<img src="http://thirdwx.qlogo.cn/mmopen/vi_32/B9eDDgEoS90sHsmFEicczSyHE7KjR3IE4dH7mUEicswWSotOYFMgeMSXiaqY8scXruzCzaaRFbmzccwDQaBmRUSaA/132" style="" />
+    						<img :src="userInfo.headImg" style="" />
     						<h2>小萌<br><small>积分：2050</small></h2>
               </router-link>
   					</span>
@@ -32,6 +32,10 @@
     export default {
       data(){
         return{
+              userInfo:{
+                headImg:'',
+                nickname:''
+              },
               currentView:"vQuestionsS",
               index:0,
               editAble:true
@@ -59,10 +63,14 @@
         }
       },
       mounted(){
+        let userInfo=JSON.parse(sessionStorage.getItem("userInfo"));
+        !userInfo?this.$router.push("/front/index"):this.userInfo=userInfo;
+
         if(this.$route.params.hasOwnProperty("type")){
             JSON.parse(sessionStorage.getItem('syssetting')).editAble==1?this.currentView='vQuestionsS':this.currentView='vQuestionsN';
             JSON.parse(sessionStorage.getItem('syssetting')).editAble==0?this.editAble=false:this.editAble=true;
         }else{
+
           this.$router.push("/front/index");
         }
 
