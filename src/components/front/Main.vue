@@ -8,18 +8,16 @@
     						<h2>小萌<br><small>积分：2050</small></h2>
               </router-link>
   					</span>
-  					<span class="f-r">
+  					<span class="f-r" style="display:none;">
               <router-link to="Rank"><img src="../../../static/img/ranking.png" alt=""></router-link>
   					</span>
   				</div>
   				<div class="title">
-  					<h1>每日一题，学习教育</h1>
+  					<h1>网络知识竞赛</h1>
   				</div>
           <div class="btns" v-if="editAble">
-
               <el-button size="medium" type="primary" @click="handClick('before')" :disabled="index==0" icon="el-icon-arrow-left">上一题</el-button>
               <el-button size="medium"  @click="handClick('next')" :disabled="index==-1" type="primary">下一题<i class="el-icon-arrow-right el-icon--right"></i></el-button>
-
           </div>
   			</header>
         <component :is="currentView" :msg="type"  ref="child" v-on:disableEdit="hideStep" v-on:currentNow="nowTag" keep-alive></component>

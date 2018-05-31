@@ -4,32 +4,32 @@
             <ul class="countdown">
               <li> <span class="seconds">{{totalTimesLeft}}</span></li>
             </ul>
-            <div  v-if="!isLast">
+            <div  v-show="!isLast">
               <div v-for="(value,index) in questions" v-show="index==current" :id="'block'+index">
                 <div id="q1">
                   <div class="content">
                     <p class="subject_t">{{index+1}}、{{value.question}}。</p>
                     <p v-for="(items,key) in value.answer">
-                      <span><input :id="'rd'+value.id+key" :disabled="value.clickAble"  :name="'rd'+index" :data-answer="items[0]" :data-pid="key+1" :type="value.type" ></span>
-                      <label :for="'rd'+value.id+key" >{{items[1]}}</label>
+                      <span><input :id="'rd'+value.id+key" :disabled="!abledToClick"  :name="'rd'+index" :data-answer="items[0]" :data-pid="key+1" :type="value.type" ></span>
+                      <label :for="'rd'+value.id+key" >{{key==0?"A":key==1?"B":"C"}}:{{items[1]}}</label>
                     </p>
                   <div class="enter_btn">
                     <a id="b1" @click="sub(index)" v-if="doneGrade.length==0" disabled="true" href="javascript:void(0);">确定</a>
                   </div>
                 </div>
                 <div id="a1" v-show="checkResult.toggle">
-                  <p>正确答案:{{value.correct}}</p>
+                  <p>正确答案:{{value.correctIndex}}</p>
                 </div>
                   </div>
               </div>
             </div>
-            <div v-if="isLast" class="content">
+            <div v-show="isLast" class="content">
                   <div class="finaly">
                     <div class="">
                       恭喜你获得{{scores}}分!
                     </div>
                     <div v-if="weChat">
-                      获得5元的现金红包!
+                      获得{{wxhb}}元的现金红包!
                     </div>
 
                   </div>
@@ -57,7 +57,9 @@ export default {
         timer:null,
         correctA:[],
         doneGrade:[],
-        totalTimesLeft:0
+        totalTimesLeft:0,
+        wxhb:0,
+        isPreview:false
     }
   },
   computed:{
@@ -80,63 +82,49 @@ export default {
     }
   },
   methods:{
-    checkQuestion(i){
+    __loopPage(){
+      let i=this.current;
       let result=false;
-      this.current=i;
+      this.$emit('currentNow',i+1);//upup
       this.doneGrade[i].res==0?result=false:result=true;
       this.checkResult={
-        isNow:false,
+        isNow:true,
         result,
-        toggle:false
+        toggle:!result
       }
-
-      //回答正确时
-      //  this.checkResult={...this.checkResult,isNow:true,result:true};
-
-                        /*
-                          this.questions[index].clickAble=true;
-                          this.questions[index]['correctType'].length>=2?dot=",":dot="";
-                          if(__nowAnswers.join(dot)==this.questions[index]['correctType']){
-                            this.checkResult={...this.checkResult,isNow:true,result:true};
-                            this.correctA.push(this.questions[index].id);
-                          }else{
-                              this.checkResult={...this.checkResult,isNow:true,result:false,toggle:true};
-                          }
-
-                                if(this.current+1<this.questions.length){
-                                  setTimeout(()=>{
-                                    that.checkResult={
-                                      isNow:false,
-                                      result:false,
-                                      toggle:false
-                                    }
-                                    that.current+=1;
-                                  },1500)
-                                }else{
-                                  this.syncDates();
-                                }*/
-        this.$emit('currentNow',i+1);//upup
-        this.$emit("disableEdit",true);
+    },
+    checkQuestion(i){
+      this.isPreview=true;
+      this.current=i;
+      this.__loopPage();
+      this.$emit("disableEdit",true);
     },
     chooseQes(action,index){
       index=index||this.current;
-      if(action=="next"){
-        let  ops=document.querySelectorAll(`#block${index} input:checked`);
-        if (ops.length==0) {
-          alert("请选择!");
-          return false;
+      if (!this.isPreview) {
+        if(action=="next"){
+          let  ops=document.querySelectorAll(`#block${index} input:checked`);
+          if (ops.length==0) {
+            alert("请选择!");
+            return false;
+          }else{
+            this.current++;
+          }
         }else{
-          this.current++;
+          if(index-1<0){
+            alert("已经是第一道题了!")
+          }else{
+            this.current--;
+          }
         }
       }else{
-        if(index-1<0){
-          alert("已经是第一道题了!")
-        }else{
-          this.current--;
-        }
+        //翻页动作
+        action=="next"?this.current++:this.current--;
+            this.__loopPage();
       }
     },
     syncDates(){
+      let that=this;
       let userAnser=new Array();
       //count per question's answer
       for (let i = 0; i < this.questions.length; i++) {
@@ -154,10 +142,11 @@ export default {
             correct:this.questions[i].correctType
           })
       }
-              this.$emit("disableEdit",false);//禁止step
-              this.isLast=true;
-              this.totalTimesLeft='';
-              clearInterval(this.timer);
+
+      this.$emit("disableEdit",false);//禁止step
+      this.isLast=true;
+      this.totalTimesLeft='';
+      clearInterval(this.timer);
 
       this.$axios.post(this.url,{
         action:"saveQinfos",
@@ -165,11 +154,29 @@ export default {
         datas:this.doneGrade
       }).then(res=>{
 
-        that.abledToClick=false;
+        switch (res.data.errorCode) {
+          case 403:
+              alert("非法答题!");
+              location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
+            break;
+          case 204:
+              alert("很抱歉,所有红包已经发放完了!");
+            break;
+          case 200:
+              this.wxhb=res.data.money
+            break;
+          case 500:
+                alert("与服务器失去响应");
+            break;
+          case 504:
+            this.wxhb=res.data.money
+            alert(res.data.msg);
+            break;
+          default:
 
-        if(res.data==0){
-          alert("与服务器失去连接，请重新答题!");
         }
+        this.abledToClick=false;
+
       }).catch(e=>{
         console.log(e);
       })
@@ -254,7 +261,7 @@ export default {
             this.qid.push(v.id);
             let datas=v.answer.split("###");
             datas.shift();
-
+            res.data[k].correctIndex="";
             datas.map((v,k)=>{
               datas[k]=v.split(".")
             });
@@ -267,7 +274,36 @@ export default {
               }else{
                 res.data[k]['type']="radio"
               }
-              res.data[k].correctType=res.data[k].correctType.split(",").sort();
+              //映射正确答案
+              let _qRight=res.data[k].correctType.split(",").sort();
+              res.data[k].correctType=_qRight;
+
+              _qRight.map(v=>{
+                datas.map((v1,k1)=>{
+                  if (v1[0]==v) {
+                    //当前选项为正确答案，将key转化为ABC,并存储到当前list中
+                    let _ar="A";
+                    switch (k1) {
+                          case 0:
+                          _ar="A";
+                          break;
+                          case 1:
+                          _ar="B";
+                          break;
+                          case 2:
+                          _ar="C";
+                          break;
+                          case 3:
+                          _ar="D";
+                          break;
+                      default:
+                    }
+                    res.data[k].correctIndex+=_ar;
+                  }
+                })
+              })
+
+            //  res.data[k].correctType=
           })
 
         this.questions=res.data;

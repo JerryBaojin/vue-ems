@@ -4,7 +4,7 @@
     	<div id="h1">
     		<header>
     			<div class="title">
-    				<h1>每日一题，学习教育</h1>
+    				<h1>网络知识竞赛</h1>
     			</div>
     		</header>
     		<div class="hm_text" >
@@ -30,6 +30,7 @@ import Wx from './WeixinJssdk';
     data(){
       return{
         configs:{
+          answereD:false,
           delivery:"false"
         },
         tag:true
@@ -51,37 +52,29 @@ import Wx from './WeixinJssdk';
         })
       },
       toMain(tag){
-        //查询此人是否今天已经答题过
-        this.$axios.post("api/frontUser.php",{
-          action:'queryExits',
-          type:tag,
-          uid:localStorage.getItem("token")
-        }).then(res=>{
-          if(res.data===1){
-            alert("你今天已经答过该类型的题了!");
-            this.$router.push({ name: 'person'})
-          }else{
-            this.$router.push({ name: 'main', params: { type: tag }})
-          }
-        }).catch(e=>{
-          console.log(e);
-        })
+        if (this.answereD) {
+          alert("今日你已经答过题了!请明天再来!");
+        }else{
+          this.$router.push({ name: 'main', params: { type: tag }})
+        }
+
       }
     },
 
     mounted(){
-
-      if(this.$route.query.hasOwnProperty('openid')){
-          this.openid=this.$route.query.openid;
+      let __this=this;
+      if(this.$route.query.hasOwnProperty('openid') || sessionStorage.getItem("openid") ){
+          this.openid=this.$route.query.openid||sessionStorage.getItem("openid");
           //存储为session
           sessionStorage.setItem("openid",this.openid);
           let requestAuthUser=async ()=>{
-
                 let user=this.getDates({action:"qUser",openid:this.openid})
                 user.then(res=>{
-                  if(res.errorCode!=200){
+                  if(res.errorCode==100){
                     location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
-                    return false;
+                  }else if (res.errorCode==204) {
+                    __this.answereD=true;
+                    alert("今日你已经答过题了!请明天再来!");
                   }else{
                     sessionStorage.setItem("userInfo",JSON.stringify(res.datas));
                   }
@@ -95,6 +88,7 @@ import Wx from './WeixinJssdk';
           requestAuthUser();
 
       }else{
+
           location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
       }
 

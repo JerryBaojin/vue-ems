@@ -1,7 +1,7 @@
 <template id="">
   <div class="">
       <div class="count">进度{{current+1}}/{{questions.length}}</div>
-      1222222222222222222222222222222222222222222222
+
             <ul class="countdown">
               <li> <span class="seconds">{{totalTimesLeft}}</span></li>
             </ul>
