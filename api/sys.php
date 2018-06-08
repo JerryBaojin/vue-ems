@@ -32,12 +32,46 @@
             $questions=$db->prepare($sql);
             echo $questions->execute(array($pwd));
         break;
-      case 'EditSysConfig':
-          $sql="UPDATE sysconfig set combine=?,conunter=?,perconunter=?,delivery=?,timu=? where id=1";
-          $_upup=$db->prepare($sql);
+      case 'qUser':
+          $sql="select headImg,nickname  from users where openid=? limit 1";
+          $tempD=$db->prepare($sql);
+          $tempD->execute(array($datas['openid']));
+          $userInfo=$tempD->fetch(PDO::FETCH_ASSOC);
+          $msg="";
+          if(!$userInfo){
+            $msg=array("erroCode"=>100);
+          }else{
+            $time=date("Y-m-d",time());
+            $_sql="select times  from dati_record where openid=?";
+            $_tempD=$db->prepare($_sql);
+            $_tempD->execute(array($datas['openid']));
+            $_recording=$_tempD->fetchAll(PDO::FETCH_ASSOC);
+            $flag=false;
+            foreach ($_recording as $key => $value) {
+              if(explode(" ",$value['times'])[0]==$time){
+                //存在当前答题时间
+                $flag=true;
+              }
+            }
+            if ($flag) {
+              echo json_encode(array(
+                "errorCode"=>204
+              ));
+            }else{
+              echo json_encode(array(
+                "errorCode"=>200,
+                "datas"=>$userInfo
+              ));
+            }
 
+          }
+        break;
+      case 'EditSysConfig':
+          $sql="UPDATE sysconfig set combine=?,conunter=?,perconunter=?,delivery=?,timu=?,editAble=?,model=?,wMoney=?,wLowWinner=?,wMaxMoney=?,scoreR=?,scoreW=?,shareDesc=?,shareLink=?,shareImage=? where id=1";
+          $_upup=$db->prepare($sql);
           $datas['data']['delivery']?$_bool="true":$_bool="false";
-        echo  $_upup->execute(array($datas['data']['combine'],$datas['data']['conunter'],$datas['data']['perconunter'],$_bool,$datas['data']['timu']));
+          $datas['data']['editAble']?$_editAble=1:$_editAble=0;
+        echo  $_upup->execute(array($datas['data']['combine'],$datas['data']['conunter'],$datas['data']['perconunter'],$_bool,$datas['data']['timu'],$_editAble,$datas['data']['model'],$datas['data']['wMoney'],$datas['data']['wLowWinner'],$datas['data']['wMaxMoney'],$datas['data']['scoreR'],$datas['data']['scoreW'],$datas['data']['shareDesc'],$datas['data']['shareLink'],$datas['data']['shareImage']));
         break;
 
       case  'getConfig':
@@ -46,13 +80,11 @@
             echo json_encode($res->fetch(PDO::FETCH_ASSOC));
         break;
       case  'frontgetConfig':
-      $time=date("Ymd",time());
-      $resa=json_decode(file_get_contents("http://api.k780.com/?app=life.workday&date=$time&appkey=33685&sign=2aa53824ea6a0c58184f78892be1168e&format=json"));
-      $sql="select * from sysconfig limit 1";
-      $res=$db->query($sql);
-      $dates=$res->fetch(PDO::FETCH_ASSOC);
-      $dates['work']=$resa;
-      echo json_encode($dates);
+          $sql="select * from sysconfig limit 1";
+          $res=$db->query($sql);
+          $dates=$res->fetch(PDO::FETCH_ASSOC);
+
+          echo json_encode($dates);
         break;
       default:
         # code...

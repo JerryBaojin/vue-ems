@@ -6,25 +6,11 @@
     switch ($datas['action']) {
         case 'getUsers':
         //SELECT * FROM (users INNER JOIN table_user ON users.UID=table_user.UID) INNER JOIN scores_month ON users.UID=scores_month.UID
-              $sql="select * from table_user left join users on table_user.UID=users.uid";
-              try {
-                $questions=$db->query($sql);
-                $totalMonth=$db->query("select * from scores_month")->fetchAll(PDO::FETCH_ASSOC);
-                $combineArray=array();
-                $_resDates=$questions->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($_resDates as $key => $v) {
-                  foreach ($totalMonth as $value) {
-                    $_resDates[$key]['monthCount']=array();
-                    if($value['UID']==$v['UID']){
-                        $_resDates[$key]['monthCount'][]=$value;
-                    }
-                  }
-                }
 
-                echo json_encode($_resDates);
-              } catch (PDOException $e) {
-                echo 0;
-              }
+                $totalMonth=$db->query("select * from dati_record left join users on dati_record.openid=users.openid")->fetchAll(PDO::FETCH_ASSOC);
+
+                echo json_encode($totalMonth);
+
         break;
         case 'getSysuser':
           $sql="select * from admin";

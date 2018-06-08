@@ -1,5 +1,5 @@
 <template id="">
-  <div class="">
+    <div class="" >
       <div class="count">进度{{current+1}}/{{questions.length}}</div>
             <ul class="countdown">
               <li> <span class="seconds">{{totalTimesLeft}}</span></li>
@@ -8,7 +8,7 @@
               <div v-for="(value,index) in questions" v-show="index==current" :id="'block'+index">
                 <div id="q1">
                   <div class="content">
-                    <p class="subject_t">{{index+1}}、{{value.question}}。</p>
+                    <p class="subject_t">{{index+1}}、{{value.question}}{{value.correctType.length>1?'(多选)':null}}</p>
                     <p v-for="(items,key) in value.answer">
                       <span><input :id="'rd'+value.id+key" :disabled="!abledToClick"  :name="'rd'+index" :data-answer="items[0]" :data-pid="key+1" :type="value.type" ></span>
                       <label :for="'rd'+value.id+key" >{{key==0?"A":key==1?"B":"C"}}:{{items[1]}}</label>
@@ -46,12 +46,14 @@ export default {
         questions:[],
         current:0,
         qid:[],
+
         config:{},
         checkResult:{
           isNow:false,
           result:false,
           toggle:false
         },
+        weChat:false,
         isLast:false,
         abledToClick:true,
         timer:null,
@@ -147,7 +149,12 @@ export default {
       this.isLast=true;
       this.totalTimesLeft='';
       clearInterval(this.timer);
-
+      const loading = this.$loading({
+         lock: true,
+         text: '数据处理中',
+         spinner: 'el-icon-loading',
+         background: 'rgba(0, 0, 0, 0.7)'
+       });
       this.$axios.post(this.url,{
         action:"saveQinfos",
         uid:sessionStorage.getItem("openid"),
@@ -163,8 +170,13 @@ export default {
               alert("很抱歉,所有红包已经发放完了!");
             break;
           case 200:
+              res.data.money==0?this.weChat=false:this.weChat=true;
+
               this.wxhb=res.data.money
             break;
+            case 203:
+                  alert("你今天已经参与过答题了!");
+              break;
           case 500:
                 alert("与服务器失去响应");
             break;
@@ -173,8 +185,8 @@ export default {
             alert(res.data.msg);
             break;
           default:
-
         }
+      loading.close();
         this.abledToClick=false;
 
       }).catch(e=>{
@@ -302,10 +314,8 @@ export default {
                   }
                 })
               })
-
             //  res.data[k].correctType=
           })
-
         this.questions=res.data;
         this.totalTimesLeft=Number(this.config.perconunter)*res.data.length;
         this.counterStart();
@@ -316,9 +326,22 @@ export default {
   }
 }
 </script>
-<style media="screen">
+<style media="screen" scoped>
+.content {
+	background: rgba(255, 255, 255, 0.6);
+	border-radius: 6px;
+	width: 560px;
+	margin: 0 auto;
+	padding: 20px;
+	margin-top: 30px;
+	line-height: 36px;
+	min-height: 280px;
+	color: #450b0c;
+	font-size: 30px;
+}
 .el-button--medium{
     padding: 12px 22px;
+        font-size: 24px;
     margin: 9px;
 }
 .countdown{
@@ -374,6 +397,12 @@ li{
     text-align: center;
     margin: 10px;
 
+  }
+  .el-loading-mask.is-fullscreen {
+    font-size: 85px;
+  }
+  .el-loading-text{
+    font-size: 23px;
   }
   .count{
     text-indent: 3%;

@@ -1,5 +1,5 @@
 <template >
-  <div class="bg">
+  <div class="bg1">
     <transition  :name="transitionName">
         <router-view></router-view>
     </transition>
@@ -50,6 +50,15 @@
 </script>
 <style >
   @import '../../../static/css/css.css';
+  .bg1{
+    height: 100%;
+background: url(http://weixin.scnjnews.com/dati/static/img/index_bg.8a66e87.png) no-repeat;
+background-position: 0 0;
+background-size: 100%,cover;
+background-attachment: fixed;
+color: #fff;
+z-index: -1;
+  }
   .slide-right-enter-active,
 .slide-right-leave-active,
 .slide-left-enter-active,

@@ -3,10 +3,10 @@
   			<header>
   				<div class="hm_icon">
   					<span class="f-l">
-              <router-link to="person">
+
     						<img :src="userInfo.headImg" style="" />
-    						<h2>小萌<br><small>积分：2050</small></h2>
-              </router-link>
+    						<h2>{{userInfo.nickname}}<br></h2>
+
   					</span>
   					<span class="f-r" style="display:none;">
               <router-link to="Rank"><img src="../../../static/img/ranking.png" alt=""></router-link>
@@ -84,7 +84,7 @@
       }
     }
 </script>
-<style media="screen">
+<style media="screen" scoped>
   .btns{
     margin:31px;
     display: flex;
@@ -95,5 +95,8 @@ justify-content: space-between;
   }
   .el-button--medium {
     font-size: 25px;
+  }
+  .f-l h2 {
+        margin: 35px 0 0 20px;
   }
 </style>

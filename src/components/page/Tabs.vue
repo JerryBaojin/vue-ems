@@ -9,8 +9,8 @@
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量审核</el-button>
                 <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
-                    <el-option key="1" label="已激活" value="1"></el-option>
-                    <el-option key="2" label="未激活" value="0"></el-option>
+                    <el-option key="1" label="达到分数线" value="1"></el-option>
+                    <el-option key="2" label="未达到分数线" value="0"></el-option>
                 </el-select>
                 <el-input v-model="select_word" placeholder="筛选微信昵称关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
@@ -19,42 +19,33 @@
             <el-table  max-height="650" :data="data" border style="width: 100%" ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelectionChange">
               <el-table-column type="selection" width="55"></el-table-column>
                 <!-- <el-table-column prop="id" width="55" label="id"></el-table-column> -->
-                <el-table-column prop="UID" width="60" label="登录ID"></el-table-column>
+                <el-table-column prop="id" width="60" label="id"></el-table-column>
                 <el-table-column prop="nickname" label="微信昵称" width="120">
                 </el-table-column>
-                <el-table-column prop="name" label="真实姓名" >
+                <el-table-column prop="result" label="是否达到指定分数线" >
                 </el-table-column>
+
+                <el-table-column prop="city" label="城市" >
+                </el-table-column>
+
                 <el-table-column prop="RegistTime" label="激活时间" >
                 </el-table-column>
-                <el-table-column prop="scores" label="当前月的得分" >
+                <el-table-column prop="scores" label="得分" >
                 </el-table-column>
+                <el-table-column prop="money" label="获得的红包" >
+                </el-table-column>
+
                 <el-table-column
-                  label="历史得分"
+                  label="红包发放详情"
                   width="180">
                   <template slot-scope="scope">
-                    <el-popover trigger="hover" placement="top" v-if="scope.row.monthCount.length>0">
-                      <div v-for="(item,index) in scope.row.monthCount" >
-                        <p>月份：{{item.month}},得分:{{item.scoress}},排名:第{{item.rank}}名</p>
-                      </div>
-                      <div slot="reference" class="name-wrapper">
-                        <el-tag size="medium">历史得分</el-tag>
-                      </div>
-                    </el-popover>
-                  </template>
-                </el-table-column>
-                <el-table-column  label="状态" >
-                  <template slot-scope="scope">
-                  <div class="">
-                    {{scope.row.oid==null?'未激活':'已激活'}}
-                  </div>
+                    <div class="">
+                        {{scope.row.resData.err_code_des}}
+                    </div>
+
                   </template>
                 </el-table-column>
 
-                <el-table-column v-if="false" label="操作" width="180">
-                    <template slot-scope="scope">
-                        <el-button size="small" type="success" :disabled="scope.row.status==1" @click="handlePass(scope)">删除</el-button>
-                    </template>
-                </el-table-column>
             </el-table>
 
             <div class="pagination">
@@ -87,15 +78,7 @@
         },
         watch:{
           select_cate(val){
-            this.tableData=this.backUpData.filter(v=>{
-              if(val==0){
-                return    v.oid==null;
-              }else{
-                return  v.oid!=null;
-              }
-            }
-
-            )
+            this.tableData=this.backUpData.filter(v=>v.result==val)
           }
         },
         created() {
@@ -120,12 +103,14 @@
             getData() {
                 this.$axios.post(this.url, {
                     action:"getUsers",
-                }).then(res=> {
-                  console.log(res);
+                  }).then(res=> {
+                    res.data.map((v,k)=>{
+                        res.data[k]['resData']=JSON.parse(v['resData']);
+                    });
                     this.backUpData = res.data;
                     this.tableData = res.data;
+
                 }).catch(e=>{
-                  console.log(e);
                   this.$message.error("网络传输错误!");
                 })
             },

@@ -32,7 +32,15 @@
           <el-input type="number" v-model.number="ruleForm.wLowWinner"></el-input>
         </el-form-item>
 
-
+        <el-form-item label="前台页面分享信息" >
+              <el-input type="text" v-model="ruleForm.shareDesc"></el-input>
+        </el-form-item>
+        <el-form-item label="前台页面分享重定向地址" >
+              <el-input type="text" v-model="ruleForm.shareLink"></el-input>
+        </el-form-item>
+        <el-form-item label="前台页面分享图标" >
+              <el-input type="text" v-model="ruleForm.shareImage"></el-input>
+        </el-form-item>
         <el-form-item label="是否允许修改已答题目" >
             <el-switch v-model="ruleForm.editAble"></el-switch>
         </el-form-item>
@@ -127,6 +135,9 @@
           combine:"随机组卷",
           conunter: 30,
           perconunter: 30,
+          shareImage:"",
+          shareDesc:"",
+          shareLink:"",
           editAble:false,
           delivery: false,
         },

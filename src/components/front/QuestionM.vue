@@ -12,7 +12,7 @@
                     <p v-for="(items,key) in value.answer">
                       <span><input :id="'rd'+value.id+key" :disabled="value.clickAble" :name="'rd'+index" :data-pid="key+1" :type="value.type" ></span>
                       <label :for="'rd'+value.id+key">{{items}}</label>
-                    </p>
+                    </p>  ，吗你你
                   <div class="enter_btn">
                     <a id="b1" @click="sub(index)" disabled="true" href="javascript:void(0);">确定</a>
                   </div>
