@@ -3,19 +3,9 @@
     <div class="login-box">
 		<div class="box-con tran">
 			<div class="login-con f-l">
-				<div class="form-group">
-					<input type="text" v-model="counts" @focus="reset" placeholder="账号"/>
-					<span v-if="validate.counts" class="error-notic">不存在该账号!</span>
-				</div>
-				<div class="form-group">
-					<input v-model="pwd" type="password" @focus="reset" placeholder="密码">
-					<span v-if="validate.pwd" class="error-notic">密码不正确</span>
-				</div>
-				<div class="form-group">
-					<button type="submit" class="tran pr">
-						<div @click="submit()" class="tran">登录</div>
-					</button>
-				</div>
+        <transition  :name="transitionName">
+            <component @next="next" :is="currentStep"></component>
+        </transition>
 				<div class="from-line"></div>
 			</div>
 		</div>
@@ -26,18 +16,30 @@
     <el-step title="确认信息"></el-step>
     <el-step title="登录"></el-step>
   </el-steps>
-<el-button style="margin-top: 12px;" @click="next">下一步</el-button>
 </div>
-
   </div>
 </template>
 <script type="text/javascript">
+import Vue from 'vue';
+
+// 使用 Event Bus
+const bus = new Vue();
+let global={
+  userInfo:{
+    name:'',
+    workUnit:'',
+    nickname:''
+  },
+  url:"api/frontUser.php",
+}
   export default {
     data(){
       return{
+        currentStep:"step1",
+        transitionName:'',
         active: 0,
         openid:"",
-        url:"api/frontUser.php",
+        url:global.url,
         counts:'',
         pwd:"",
         validate:{
@@ -46,16 +48,99 @@
         },
       }
     },
+    watch:{
+      currentStep(to, from) {
+        //如果to索引大于from索引,判断为前进状态,反之则为后退状态
+        if(parseInt(from.slice(4,5)) > parseInt(to.slice(4,5))){
+          //设置动画名称
+          this.transitionName = 'slide-left';
+        }else{
+          this.transitionName = 'slide-right';
+        }
+      }
+    },
+    components:{
+      step1:{
+        template:`
+          <div>
+            <div class="form-group">
+    					<input type="number" v-model="phone"  placeholder="请输入手机号"/>
+    				</div>
+            <div class="form-group">
+    					<button type="submit" class="tran pr">
+    						<div @click="checkPhone" class="tran">下一步</div>
+    					</button>
+    				</div>
+            </div>
+        `,
+        data(){
+          return{
+            phone:''
+          }
+        },
+        methods:{
+          checkPhone(){
+            this.phone.length<=0?alert("请输入手机号!"):null;
+            if (!/^1[3|4|5|6|7|8][0-9]\d{8}$|^\d{8}$/.test(this.phone)) {
+              alert("输入的格式错误!");
+              return false;
+            }
+            this.$axios.post(global.url,{
+              action:"authPhone",
+              phone:this.phone
+            }).then(res=>{
+              if (res.data) {
+                global.userInfo=res.data
+              }
+              this.$emit('next')
+            })
+          }
+        },
+        watch:{
+          phone(v){
+            global.phone=v;
+          }
+        },
+        mounted(){
+
+        }
+      }
+      ,step2:{
+        template:`
+          <div>
+          <div class="form-group" id="step2">
+            <input type="text"  v-show="userInfo.name !=''" disabled='true' v-model="userInfo.name"   />
+            <input type="text"  v-show="userInfo.workUnit !=''" disabled='true' v-model="userInfo.workUnit"   />
+            <input type="text" v-model="userInfo.nickname"  placeholder="请输入昵称"/>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="tran pr">
+              <div  class="confirm">确认信息</div>
+            </button>
+          </div>
+          </div>
+        `,
+        data(){
+          return{
+              userInfo:global.userInfo
+          }
+        }
+      }
+      ,step3:{
+        template:`
+        <div class="form-group">
+					<input type="text" placeholder="请输入手机号"/>
+				</div>
+        `
+      }
+    },
     methods:{
       next() {
+
         if (this.active++ > 2) this.active = 0;
+        this.currentStep=`step${this.active+1}`;
       },
-      reset(){
-        this.validate={
-          counts:false,
-          pwd:false
-        }
-      },
+
       submit(){
         if (this.openid=='') {
             location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
@@ -104,11 +189,37 @@
     },
     mounted(){
 
-      //openid
     }
   }
 </script>
-<style media="screen">
+<style media="screen" scoped>
+.step2 input{
+  margin:10px 0 10px;
+}
+  .slide-right-enter-active,
+  .slide-right-leave-active,
+  .slide-left-enter-active,
+  .slide-left-leave-active {
+  will-change: transform;
+  transition: all 500ms;
+  position: absolute;
+  }
+  .slide-right-enter {
+  opacity: 0;
+  transform: translate3d(-100%, 0, 0);
+  }
+  .slide-right-leave-active {
+  opacity: 0;
+  transform: translate3d(100%, 0, 0);
+  }
+  .slide-left-enter {
+  opacity: 0;
+  transform: translate3d(100%, 0, 0);
+  }
+  .slide-left-leave-active {
+  opacity: 0;
+  transform: translate3d(-100%, 0, 0);
+  }
   .steps{
     position: absolute;
     width: 71%;

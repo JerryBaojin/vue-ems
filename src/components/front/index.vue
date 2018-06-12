@@ -56,13 +56,13 @@ import Wx from './WeixinJssdk';
       },
       getCookie(NameOfCookie){
         if (document.cookie.length > 0) {
-        begin = document.cookie.indexOf(NameOfCookie + "=");
-        if (begin != -1) {
-        begin += NameOfCookie.length + 1;
-        end = document.cookie.indexOf(";", begin);
-        if (end == -1) end = document.cookie.length;
-        return unescape(document.cookie.substring(begin, end));
-        }
+          begin = document.cookie.indexOf(NameOfCookie + "=");
+          if (begin != -1) {
+          begin += NameOfCookie.length + 1;
+          end = document.cookie.indexOf(";", begin);
+          if (end == -1) end = document.cookie.length;
+          return unescape(document.cookie.substring(begin, end));
+          }
         }
         return null;
       },
@@ -82,7 +82,7 @@ import Wx from './WeixinJssdk';
                   let user=this.getDates({action:"qUser",openid:this.openid})
                   user.then(res=>{
                     if(res.errorCode==100){
-                      location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
+                      location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
                     }else if (res.errorCode==204) {
                       __this.answereD=true;
                     }else{
@@ -104,7 +104,7 @@ import Wx from './WeixinJssdk';
                 }
             requestAuthUser();
         }else{
-            location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
+            location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
         }
       },
       toMain(tag){
@@ -120,7 +120,7 @@ import Wx from './WeixinJssdk';
                     let user=this.getDates({action:"qUser",openid:this.openid})
                     user.then(res=>{
                       if(res.errorCode==100){
-                        location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
+                        location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
                       }else if (res.errorCode==204) {
                         __this.answereD=true;
                       }else{
@@ -143,7 +143,7 @@ import Wx from './WeixinJssdk';
                   }
               requestAuthUser();
           }else{
-              location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
+              location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
           }
         }
       }

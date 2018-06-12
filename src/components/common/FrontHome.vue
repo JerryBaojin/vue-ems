@@ -34,16 +34,7 @@
       }
     },
     mounted(){
-      var userScalable = "no";
-      var ins = "";
-      (function () {
-        if (window.devicePixelRatio === 1.5) {
-          userScalable = "yes";
-          ins = "initial-scale=0.5"
-        }
-        var text = "<meta content='" + ins + ", target-densitydpi=device-dpi, width=640,user-scalable=" + userScalable + "' name='viewport'>";
-        document.write(text);
-      })();
+
     }
   }
 </script>

@@ -1,106 +1,87 @@
   <template id="">
     <div class="containers">
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="150px" class="demo-ruleForm">
-        <el-form-item v-show="false" label="答题倒计时(秒)" prop="conunter">
+        <el-form-item label="答题倒计时(秒)" prop="conunter">
           <el-input type="number" v-model.number="ruleForm.conunter"></el-input>
         </el-form-item>
-
         <el-form-item label="每题答题时间(秒)" prop="perconunter">
           <el-input type="number" v-model.number="ruleForm.perconunter"></el-input>
         </el-form-item>
-
-
-
-        <el-form-item label="开启套题模式" prop="delivery">
-          <el-switch v-model="ruleForm.delivery"></el-switch>
+        <el-form-item label="是否关闭系统">
+          <el-radio-group v-model="ruleForm.sysstatus">
+            <el-radio label="关闭" value="0"></el-radio>
+            <el-radio label="开启" value="1"></el-radio>
+          </el-radio-group>
         </el-form-item>
 
-        <el-form-item label="每套题的数目" v-if="ruleForm.delivery" prop="timu">
+        <el-form-item label="答题模式">
+          <el-radio-group v-model="ruleForm.type" name="">
+            <el-radio  label="每日一测" value="single" name="mode"></el-radio >
+            <el-radio  label="每周一测" value="week" name="mode"></el-radio >
+            <el-radio  label="套题测试" value="muti" name="mode"></el-radio >
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="用户注册敏感字库">
+          <el-input type="textarea" v-model="ruleForm.filter" placeholder="默认敏感字间用英文状态','隔开" ></el-input>
+        </el-form-item>
+
+        <el-form-item label="每套题的数目"  prop="timu">
           <el-input type="number" v-model.number="ruleForm.timu"></el-input>
         </el-form-item>
 
-        <el-form-item label="组卷模式" v-if="ruleForm.delivery" prop="combine">
-          <el-select class="" v-model="ruleForm.combine" name="">
-            <el-option value="随机组卷"> </el-option>
-            <el-option value="手工组卷"> </el-option>
+
+        <el-form-item label="组卷模式" >
+          <el-select  v-model="ruleForm.combine" name="">
+            <el-option label="随机组卷" value="random" ></el-option>
+            <el-option label="指定组卷" value="manmade" ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')">保存</el-button>
-          <el-button @click="resetForm('ruleForm')">重置</el-button>
-          <el-button @click="editVisible = true">点击修改密码</el-button>
-        </el-form-item>
+
+        <div :inline="true"  class="demo-form-inline" v-show=" ruleForm.combine =='manmade' ">
+          <el-form-item label="单选题数量" >
+            <el-input type="number" v-model.number="ruleForm.types.single"></el-input>
+          </el-form-item>
+          <el-form-item label="多选题数量">
+            <el-input type="number" v-model.number="ruleForm.types.muti"></el-input>
+          </el-form-item>
+          <el-form-item label="判断题数量">
+            <el-input type="number" v-model.number="ruleForm.types.judge"></el-input>
+          </el-form-item>
+        </div>
+
+
+
+        <el-form-item size="large">
+            <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
+            <el-button>取消</el-button>
+          </el-form-item>
+
       </el-form>
-      <el-form :model="ruleForm2" status-icon :rules="rules2" ref="ruleForm2" label-width="100px" class="demo-ruleForm">
-      <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form-item label="原密码" prop="pwd">
-              <el-input  type="password" v-model="ruleForm2.pwd"></el-input>
-            </el-form-item>
-            <el-form-item label="密码" prop="pwd1">
-              <el-input type="password" v-model="ruleForm2.pwd1" auto-complete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="确认密码" prop="pwd2">
-              <el-input type="password" v-model="ruleForm2.pwd2" auto-complete="off"></el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="submitForm2('ruleForm2')">提交</el-button>
-              <el-button @click="editVisible=false">取消</el-button>
-            </el-form-item>
-          </el-dialog>
-      </el-form>
+
         </div>
   </template>
 <script>
   export default {
     data() {
-        var validatePass = (rule, value, callback) => {
-          this.$axios.post(this.url,{
-            action:"checkPWD",
-            o:value
-          }).then(res=>{
-            if(res.data==0){
-                 callback(new Error('密码错误!'));
-            }else{
-               callback();
-            }
-          }).catch(e=>{
-            console.warn(e);
-          })
-        };
-        var validatePass1 = (rule, value, callback) => {
-          if (value === '') {
-            callback(new Error('请再次输入密码'));
-          } else if  (this.ruleForm2.pwd2 !== '') {
-           this.$refs.ruleForm2.validateField('pwd2');
-             callback();
-          } else {
-            callback();
-          }
-        };
-       var validatePass2 = (rule, value, callback) => {
-         if (value === '') {
-           callback(new Error('请再次输入密码'));
-         } else if (value !== this.ruleForm2.pwd1) {
-           callback(new Error('两次输入密码不一致!'));
-         } else {
-           callback();
-         }
-       };
       return {
         url: 'api/sys.php',
         editVisible:false,
         ruleForm: {
           timu:0,
-          combine:"随机组卷",
+          type:'single',
+          combine:"",
           conunter: 30,
+          filter:"",
           perconunter: 30,
-          delivery: false,
+          types: {
+                    single:0,
+                    muti:0,
+                    judge:0
+                  },
+          sysstatus:"关闭"
         },
-        ruleForm2: {
-                  pwd: '',
-                  pwd1: '',
-                  pwd2: ''
-                },
+
         rules: {
           conunter: [
                 {required: true, message: '请输入答题倒计时 单位(秒)', trigger: 'blur' },
@@ -114,46 +95,19 @@
             {required: true, message: '请输入每题答题时间 单位(秒)', trigger: 'blur' },
             { type: 'number', message: '时间必须为数字值'}
           ]
-        },
-        rules2: {
-         pwd: [
-            { required: true, message: '请输入密码', trigger: 'blur' },
-           { validator: validatePass, trigger: 'blur' }
-         ],
-         pwd1: [
-           { required: true, message: '请输入新密码', trigger: 'blur' },
-           { validator: validatePass1, trigger: 'blur' }
-         ],
-         pwd2: [
-           { required: true, validator: validatePass2, trigger: 'blur' }
-         ]
-       }
+        }
       };
     },
     methods: {
-      submitForm2(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            this.$axios.post(this.url,{
-                 action:"changePWD",
-                 newpwd:this.ruleForm2.pwd2
-            }).then(res=>{
-              if(res.data==1){
-                this.$message.success('修改成功!');
-                localStorage.removeItem("ms_username");
-                this.$router.push('/login')
-              }else{
-                this.$message.error('网络传输错误');
-                }
-            })
-          } else {
-             this.$message.error('网络传输错误');
-             return false;
-          }
-        });
-      },
       submitForm(formName) {
+        if (this.ruleForm.combine=='manmade') {
+          if (this.ruleForm.timu!=(this.ruleForm.types.single+this.ruleForm.types.muti+this.ruleForm.types.judge)) {
+            this.$message.error("请核对数目");
+            return false;
+          }
+        }
         this.$refs[formName].validate((valid) => {
+
           if (valid) {
               this.$axios.post(this.url,{
                 action:"EditSysConfig",
@@ -189,7 +143,7 @@
         res.data.conunter=Number(res.data.conunter);
         res.data.perconunter=Number(res.data.perconunter);
         res.data.timu=Number(res.data.timu);
-        res.data.delivery=="false"?res.data.delivery=false:res.data.delivery=true;
+        res.data.types=JSON.parse(res.data.types);
         this.ruleForm={...res.data};
 
       }).catch(e=>{
