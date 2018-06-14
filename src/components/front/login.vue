@@ -30,7 +30,9 @@ let global={
     workUnit:'',
     nickname:''
   },
+  phone:null,
   url:"api/frontUser.php",
+  validateCode:null
 }
   export default {
     data(){
@@ -53,9 +55,9 @@ let global={
         //如果to索引大于from索引,判断为前进状态,反之则为后退状态
         if(parseInt(from.slice(4,5)) > parseInt(to.slice(4,5))){
           //设置动画名称
-          this.transitionName = 'slide-left';
-        }else{
           this.transitionName = 'slide-right';
+        }else{
+          this.transitionName = 'slide-left';
         }
       }
     },
@@ -75,11 +77,35 @@ let global={
         `,
         data(){
           return{
+            validateCode:null,
             phone:''
           }
         },
         methods:{
           checkPhone(){
+            //判断当日发送了几次
+            //Jslint
+              if (this.validateCode) {
+                let datas=this.validateCode;
+                if(datas.times>=5){
+                  if (datas.day==new Date().getDate()) {
+                    alert("今日短信发送数量已达到上限，请明天再来!");
+                  }else{
+                    this.validateCode.times=0;
+                    this.sendMsg();
+                  }
+                }else{
+                  this.sendMsg();
+                }
+              } else{
+                this.validateCode={
+                  "day":new Date().getDate(),
+                  "times":0
+                }
+                this.sendMsg();
+              }
+          },
+          sendMsg(){
             this.phone.length<=0?alert("请输入手机号!"):null;
             if (!/^1[3|4|5|6|7|8][0-9]\d{8}$|^\d{8}$/.test(this.phone)) {
               alert("输入的格式错误!");
@@ -89,10 +115,22 @@ let global={
               action:"authPhone",
               phone:this.phone
             }).then(res=>{
-              if (res.data) {
-                global.userInfo=res.data
+              if(res.data.msg<1){
+                alert("发送验证码失败!");
+                return false;
               }
-              this.$emit('next')
+              if (res.data.userinfo) {
+                global.phone=this.phone;
+                global.userInfo=res.data.userinfo,
+                global.code=res.data.code
+              }
+              //同步更新localStorage
+              this.validateCode.day=new Date().getDate();
+              this.validateCode.times++;
+              localStorage.setItem("validateCode",JSON.stringify(this.validateCode));
+              global.validateCode=this.validateCode;
+              this.$emit('next');
+
             })
           }
         },
@@ -102,7 +140,7 @@ let global={
           }
         },
         mounted(){
-
+          localStorage.getItem("validateCode")?this.validateCode=JSON.parse(localStorage.getItem("validateCode")):null;
         }
       }
       ,step2:{
@@ -111,21 +149,97 @@ let global={
           <div class="form-group" id="step2">
             <input type="text"  v-show="userInfo.name !=''" disabled='true' v-model="userInfo.name"   />
             <input type="text"  v-show="userInfo.workUnit !=''" disabled='true' v-model="userInfo.workUnit"   />
-            <input type="text" v-model="userInfo.nickname"  placeholder="请输入昵称"/>
+            <input type="text"  v-model="userInfo.nickname"  placeholder="请输入昵称"/>
+            <div style="margin-top: 15px;">
+              <input placeholder="请输入验证码" type="number"  v-model="underCheck" />
+                <el-button @click="checkPhone" style="position: absolute;width: 82px;right: 30px;height: 68px;line-height:55px;" type="info" :disabled="!reValidate">{{counter}}{{(typeof counter=='number' && counter!=NaN)?'s':''}}</el-button>
+            </div>
           </div>
           <div class="form-group">
             <button type="submit" class="tran pr">
-              <div  class="confirm">确认信息</div>
+              <div @click="confirm" class="confirm">确认信息</div>
             </button>
           </div>
           </div>
         `,
         data(){
           return{
-              userInfo:global.userInfo
+              reValidate:false,
+              counter:60,
+              code:null,
+              userInfo:global.userInfo,
+              underCheck:''
           }
+        },methods:{
+          checkPhone(){
+            //判断当日发送了几次
+            //Jslint
+              if (global.validateCode) {
+                let datas=global.validateCode;
+                if(datas.times>=5){
+                  if (datas.day==new Date().getDate()) {
+                    alert("今日短信发送数量已达到上限，请明天再来!");
+                  }else{
+                    global.validateCode.times=0;
+                    this.sendMsg();
+                  }
+                }else{
+                  this.sendMsg();
+                }
+              } else{
+                global.validateCode={
+                  "day":new Date().getDate(),
+                  "times":0
+                }
+                this.sendMsg();
+              }
+          },
+           sendMsg(){
+
+              this.$axios.post(global.url,{
+                action:"getCode",
+                phone:global.phone
+              }).then(res=>{
+                if(res.data.msg<1){
+                  alert("发送验证码失败!");
+                  return false;
+                }
+                global.code=res.data.code
+                //同步更新localStorage
+                global.validateCode.day=new Date().getDate();
+                global.validateCode.times++;
+                localStorage.setItem("validateCode",JSON.stringify(global.validateCode));
+                this.counterStart();
+              })
+            },
+            counterStart(){
+              this.code=global.code;
+              this.reValidate=false
+              this.counter=60
+              let timer=setInterval(()=>{
+                if (this.counter<=1) {
+                  this.counter="重发";
+                  this.reValidate=true;
+                  clearInterval(timer);
+                }else{
+                  this.counter--;
+                }
+              },1000)
+            },
+          confirm(){
+            this.$axios.post(global.url,{
+              ...this.userInfo,
+              acrion:"userRegist"
+            }).then(res=>{
+              console.log(res);
+            })
+          }
+        },
+        mounted(){
+          this.counterStart();
         }
-      }
+        }
+
       ,step3:{
         template:`
         <div class="form-group">
@@ -136,9 +250,8 @@ let global={
     },
     methods:{
       next() {
-
         if (this.active++ > 2) this.active = 0;
-        this.currentStep=`step${this.active+1}`;
+          this.currentStep=`step${this.active+1}`;
       },
 
       submit(){
@@ -165,7 +278,7 @@ let global={
                 break;
                 case 200:
                   this.$message.success("登录成功!");
-                  this.$router.push({name:"person",params:{UID:this.counts}})
+                   this.$router.push({name:"person",params:{UID:this.counts}})
                   break;
                 case 103:
                     this.$message.error("网络错误!");
@@ -193,6 +306,9 @@ let global={
   }
 </script>
 <style media="screen" scoped>
+.el-step__title{
+  font-size: 28px;
+}
 .step2 input{
   margin:10px 0 10px;
 }
