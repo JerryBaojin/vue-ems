@@ -59,9 +59,9 @@
                 </el-table-column>
                 <el-table-column prop="correct" label="正确答案" >
                 </el-table-column>
-
-
-                <el-table-column prop="type" label="类型" >
+                <el-table-column prop="type" label="题型" >
+                </el-table-column>
+                <el-table-column prop="qType" label="类型" >
                 </el-table-column>
                 <el-table-column   label="是否已入选题库" >
                       <template slot-scope="scope">
@@ -211,7 +211,8 @@
             }
             this.$axios.post(this.url,{
               action:"changeChecking",
-              ids:date
+              ids:date,
+              status:status
             }).then(res=>{
                 if(res.data==1){
                   this.$message.success("修改成功!");
@@ -267,7 +268,7 @@
                 })
               }
           },
-            showTips(title,contents){
+          showTips(title,contents){
             const h=this.$createElement;
             this.$notify({
               title: title,
@@ -275,8 +276,7 @@
               duration: 5000
             });
           },
-            handleUploadSuccess(v){
-
+          handleUploadSuccess(v){
             if(v>0){
               this.$message.success(`上传题库成功!`);
               this.getData();
@@ -284,10 +284,10 @@
               this.$message.error("文件删除出错!");
             }
           },
-            handleCurrentChange(val) {
+          handleCurrentChange(val) {
               this.cur_page = val;
           },
-            getData() {
+          getData() {
                 this.$axios.post(this.url, {
                     action:"getQuestions",
                     page: this.cur_page
@@ -448,17 +448,17 @@
               })
                         this.delVisible = false;
             }
-        },
-        mounted(){
-          this.$axios.post("api/sys.php",{
-            action:"getConfig"
-          }).then(res=>{
-            this.sysconfig={...res.data};
-            res.data.delivery=="false"?this.chooseQ=true:this.chooseQ=false;
-          }).catch(e=>{
-            this.$message.error("网络传输错误!")
-          })
-        }
+          },
+          mounted(){
+            this.$axios.post("api/sys.php",{
+              action:"getConfig"
+            }).then(res=>{
+              this.sysconfig={...res.data};
+              res.data.delivery=="false"?this.chooseQ=true:this.chooseQ=false;
+            }).catch(e=>{
+              this.$message.error("网络传输错误!")
+            })
+          }
     }
 
 </script>

@@ -28,10 +28,6 @@
                     <div class="">
                       恭喜你获得{{scores}}分!
                     </div>
-                    <div v-if="weChat">
-                      获得{{wxhb}}元的现金红包!
-                    </div>
-
                   </div>
                       <el-button size="medium" v-for="(v,i) in doneGrade" :key="i" :type="v.res==1?'success':'danger'" @click="checkQuestion(i)">{{i+1}}</el-button>
             </div>
@@ -67,13 +63,6 @@ export default {
   computed:{
     scores(){
         return this.doneGrade.filter((v)=>v.res==1).length*JSON.parse(sessionStorage.getItem('syssetting')).scoreR;
-    },
-    weChat(){
-      if (JSON.parse(sessionStorage.getItem('syssetting')).model==1) {
-        return true
-      }else{
-        return false;
-      }
     }
   },
   watch:{
@@ -157,7 +146,8 @@ export default {
        });
       this.$axios.post(this.url,{
         action:"saveQinfos",
-        uid:sessionStorage.getItem("openid"),
+        timeChar:new Date().getTime(),
+        openid:JSON.parse(localStorage.getItem("wxUser-jw"))._openid,
         datas:this.doneGrade
       }).then(res=>{
 
@@ -253,7 +243,7 @@ export default {
   },
   props:['msg'],
   mounted(){
-      sessionStorage.getItem("openid")?null:this.$router.push("/front/index");
+      localStorage.getItem("wxUser-jw")?null:this.$router.push("/front/index");
     Array.prototype.shunt=function(){
       //随机洗牌算法
     	let __this=this;
@@ -266,9 +256,14 @@ export default {
     }
     this.config=JSON.parse(sessionStorage.getItem("syssetting"));
     this.$axios.post(this.url,{
-      action:"getQuestions",
-      tag:this.msg
+          action:"getQuestions",
+          tag:this.msg
         }).then(res=>{
+      if (res.data.code!==200) {
+        alert("获取题目失败!");
+        return false;
+      }
+          res.data=res.data.data
           res.data.map((v,k)=>{
             this.qid.push(v.id);
             let datas=v.answer.split("###");
@@ -403,6 +398,8 @@ li{
   }
   .el-loading-text{
     font-size: 23px;
+  }.el-loading-spinner{
+    font-size: 30px;
   }
   .count{
     text-indent: 3%;

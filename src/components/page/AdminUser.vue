@@ -8,9 +8,9 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量删除</el-button>
-
-                <el-input v-model="select_word" placeholder="筛选微信昵称关键词" class="handle-input mr10"></el-input>
+                <el-input v-model="select_word" placeholder="筛选管理员昵称称关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
+                <el-button type="primary" icon="search" @click="add">新增管理员</el-button>
             </div>
 
             <el-table  max-height="450" :data="data" border style="width: 70%" ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelectionChange">
@@ -56,7 +56,7 @@
               </el-form>
               <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+                <el-button type="primary" @click="confirm">确 定</el-button>
               </div>
             </el-dialog>
         </div>
@@ -109,8 +109,16 @@
             }
         },
         methods: {
+          confirm(){
+            console.log(this.form);
+            return false;
+          },
+            add(){
+              console.log(123)
+            },
             handleEdit(v){
-              console.log(v);
+              this.form={...v.row};
+              this.dialogFormVisible=true;
             },
             handleCurrentChange(val) {
                 this.cur_page = val;

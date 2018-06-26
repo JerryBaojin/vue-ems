@@ -4,7 +4,7 @@
     	<div id="h1">
     		<header>
     			<div class="title">
-    				<h1>内江市创建国家卫生城市网络知识竞赛</h1>
+    				<h1>网络知识竞赛</h1>
     			</div>
     		</header>
     		<div class="hm_text" >
@@ -20,10 +20,27 @@
       </div>
 
     	<div class="hm_btn" v-if="tag">
-    		<div class="btn_bg"  v-show="false"   @click="toMain('single')">进入每日一题</div>
+    		  <div class="btn_bg"  v-show="false"   @click="toMain('single')">进入每日一题</div>
           <el-button type="danger" class="enter" @click="toMain('muti')" round>开始答题</el-button>
-
+          <el-button type="danger" class="enter" @click="toMain('muti')" round>开始答题</el-button>
     	</div>
+
+
+<el-dialog
+  title="请输入验证码"
+  :visible.sync="dialogVisible"
+  class="dialog"
+>
+<div class="sourceInput">
+  <el-input style="height:53px" v-model="code" placeholder="请输入验证码"></el-input>
+  <img :src="validateUrl" alt="" @click="change()">
+  <dt>点击图片进行更换图片</dt>
+</div>
+  <span slot="footer" class="dialog-footer">
+    <el-button @click="dialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="checkCode">确 定</el-button>
+  </span>
+</el-dialog>
 
     </div>
 
@@ -33,16 +50,66 @@ import Wx from './WeixinJssdk';
   export default {
     data(){
       return{
+        code:"",
+        dialogVisible: false,
+        validateUrl:"api/validate/output.php?action=seed&x="+new Date().getTime(),
         configs:{
           answereD:false,
           delivery:"false"
         },
-        tag:true
+        tag:true,
+        params:null
       }
     },
-    computed:{
-    },
     methods:{
+      checkCode(){
+
+          if (this.code=='') {
+            alert("请输入验证码");
+          }else{
+            this.$axios.get("api/validate/output.php?action=check&code="+this.code).then(res=>{
+              if (res.data==1) {
+                alert("验证成功!")
+                this.code='';
+                this.dialogVisible=false;
+
+                if (this.answereD) {
+                  alert("今日你已经答过题了!请明天再来!");
+                }else if(this.configs.sysstatus=="关闭"){
+                    alert("系统已关闭!请稍后再试!");
+                }else{
+                  const timeChar=new Date().getTime();
+                  const period=JSON.parse(this.configs.period);
+
+                  if(period==null){
+                    this.$router.push({ name: 'main', params: { type: this.params }});
+                    return false;
+                  }
+                  if (timeChar>period[0] ) {
+                      if (timeChar<period[1]) {
+                        this.$router.push({ name: 'main', params: { type: this.params  }})
+                      }else{
+                        alert("答题时间已过!");
+                      }
+                  }else{
+                    const d=period[0]
+                    alert("答题将于"+this.formatDate(period[0])+"开启!");
+                  }
+
+                  }
+              }else{
+                alert("验证码错误！");
+                this.change();
+              }
+            }).catch(e=>{})
+          }
+
+
+      },
+      change(){
+        this.code="";
+        this.validateUrl="api/validate/output.php?action=seed&x="+new Date().getTime();
+      },
       getDates(parmas){
         return new Promise((resolve,reject)=>{
           this.$axios.post("api/sys.php",{
@@ -54,99 +121,38 @@ import Wx from './WeixinJssdk';
           })
         })
       },
-      getCookie(NameOfCookie){
-        if (document.cookie.length > 0) {
-          begin = document.cookie.indexOf(NameOfCookie + "=");
-          if (begin != -1) {
-          begin += NameOfCookie.length + 1;
-          end = document.cookie.indexOf(";", begin);
-          if (end == -1) end = document.cookie.length;
-          return unescape(document.cookie.substring(begin, end));
-          }
-        }
-        return null;
-      },
-      setCookie(NameOfCookie,value,expiredays){
-        var ExpireDate = new Date();
-        ExpireDate.setTime(ExpireDate.getTime() + (expiredays * 24 * 3600 * 1000));
-        document.cookie = NameOfCookie + "=" + escape(value) + ((expiredays == null) ? "": "; expires=" + ExpireDate.toGMTString());
-      },
       getInfo(){
         let __this=this;
-        if(this.$route.query.hasOwnProperty('openid') || sessionStorage.getItem("openid") || this.getCookie("dopenid") ){
-            this.openid=this.$route.query.openid||sessionStorage.getItem("openid") || this.getCookie("dopenid");
-            //存储为session
-            sessionStorage.setItem("openid",this.openid);
-            this.setCookie("dopenid",this.openid,1);
+        let userInfo=JSON.parse(localStorage.getItem("wxUser-jw"));
             let requestAuthUser=async ()=>{
-                  let user=this.getDates({action:"qUser",openid:this.openid})
-                  user.then(res=>{
-                    if(res.errorCode==100){
-                      location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
-                    }else if (res.errorCode==204) {
-                      __this.answereD=true;
-                    }else{
-                      sessionStorage.setItem("userInfo",JSON.stringify(res.datas));
-                    }
-                  });
-                  let SysSetting=this.getDates({action:"frontgetConfig"});
-                  SysSetting.then(res=>{
-                    this.configs=res;
+                  let SysSetting=await this.getDates({action:"frontgetConfig"});
+                    this.configs=SysSetting;
                     let dates={
-                    "title":res.shareDesc,
-                    "desc":res.shareDesc,
-                    "image":res.shareImage,
-                    "link":res.shareLink,
+                    "title":SysSetting.shareDesc,
+                    "desc":SysSetting.shareDesc,
+                    "image":SysSetting.shareImage,
+                    "link":SysSetting.shareLink
                   }
                     Wx(dates);
-                    sessionStorage.setItem("syssetting",JSON.stringify(res));
-                  })
-                }
+                    sessionStorage.setItem("syssetting",JSON.stringify(SysSetting));
+                  }
             requestAuthUser();
-        }else{
-            location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
-        }
+      },
+      formatDate(now){
+        var date =  new Date(now);
+            var y = 1900+date.getYear();
+            var m = "0"+(date.getMonth()+1);
+            var d = "0"+date.getDate();
+            return y+"-"+m.substring(m.length-2,m.length)+"-"+d.substring(d.length-2,d.length);
       },
       toMain(tag){
-        if (this.answereD) {
-          alert("今日你已经答过题了!请明天再来!");
-        }else{
-          let __this=this;
-          if(this.$route.query.hasOwnProperty('openid') || sessionStorage.getItem("openid") ){
-              this.openid=this.$route.query.openid||sessionStorage.getItem("openid");
-              //存储为session
-              sessionStorage.setItem("openid",this.openid);
-              let requestAuthUser=async ()=>{
-                    let user=this.getDates({action:"qUser",openid:this.openid})
-                    user.then(res=>{
-                      if(res.errorCode==100){
-                        location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
-                      }else if (res.errorCode==204) {
-                        __this.answereD=true;
-                      }else{
-                        sessionStorage.setItem("userInfo",JSON.stringify(res.datas));
-                      }
-                    });
-                    let SysSetting=this.getDates({action:"frontgetConfig"});
-                    SysSetting.then(res=>{
-                      this.configs=res;
-                      let dates={
-                      "title":res.shareDesc,
-                      "desc":res.shareDesc,
-                      "image":res.shareImage,
-                      "link":res.shareLink,
-                    }
-                      Wx(dates);
-                      sessionStorage.setItem("syssetting",JSON.stringify(res));
-                        this.$router.push({ name: 'main', params: { type: tag }})
-                    })
-                  }
-              requestAuthUser();
-          }else{
-              location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
-          }
+          this.params=tag;
+          this.dialogVisible=true;
+
+
+
         }
-      }
+
     },
           created: function () {
                   this.getInfo();
@@ -177,4 +183,14 @@ import Wx from './WeixinJssdk';
   color: red;
   font-weight: bold;
   }
+.dialog *{
+  font-size: 22px;
+}
+.el-dialog__title{
+  font-size: 22px;
+}
+.sourceInput img{
+  height: 68px;
+margin: 10px;
+}
 </style>

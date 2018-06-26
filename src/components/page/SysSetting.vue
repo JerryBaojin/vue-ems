@@ -22,19 +22,51 @@
           </el-radio-group>
         </el-form-item>
 
+        <el-form-item label="活动进行时间段">
+          <div class="block">
+            <span class="demonstration"></span>
+            <el-date-picker
+              v-model="ruleForm.period"
+              value-format="timestamp"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期">
+            </el-date-picker>
+          </div>
+        </el-form-item>
+<!--
+        <div class="block">
+          <span class="demonstration">默认</span>
+          <el-date-picker
+            v-model="value4"
+            type="datetimerange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期">
+          </el-date-picker>
+        </div>
+      -->
+
         <el-form-item label="用户注册敏感字库">
           <el-input type="textarea" v-model="ruleForm.filter" placeholder="默认敏感字间用英文状态','隔开" ></el-input>
         </el-form-item>
-
         <el-form-item label="每套题的数目"  prop="timu">
           <el-input type="number" v-model.number="ruleForm.timu"></el-input>
         </el-form-item>
-
-
         <el-form-item label="组卷模式" >
           <el-select  v-model="ruleForm.combine" name="">
             <el-option label="随机组卷" value="random" ></el-option>
             <el-option label="指定组卷" value="manmade" ></el-option>
+            <el-option label="自选题目" value="manchoose" ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="题型选择" >
+          <el-select  v-model="ruleForm.qType" name="">
+
+            <el-option v-for="(v,x) in typeLists" :key="x" :label="v['qType']" :value="v['qType']" checked ></el-option>
+
           </el-select>
         </el-form-item>
 
@@ -67,12 +99,15 @@
       return {
         url: 'api/sys.php',
         editVisible:false,
+        typeLists:[{qType:"默认"}],
         ruleForm: {
+          period: [],
           timu:0,
           type:'single',
           combine:"",
           conunter: 30,
           filter:"",
+          qType:"默认",
           perconunter: 30,
           types: {
                     single:0,
@@ -81,7 +116,6 @@
                   },
           sysstatus:"关闭"
         },
-
         rules: {
           conunter: [
                 {required: true, message: '请输入答题倒计时 单位(秒)', trigger: 'blur' },
@@ -122,7 +156,6 @@
               this.$message.error("网络传输错误!")
               })
           } else {
-            console.log('error submit!!');
             return false;
           }
         });
@@ -139,11 +172,22 @@
           action:"getConfig"
         }
       ).then(res=>{
+
         delete res.data.id;
         res.data.conunter=Number(res.data.conunter);
         res.data.perconunter=Number(res.data.perconunter);
         res.data.timu=Number(res.data.timu);
         res.data.types=JSON.parse(res.data.types);
+        res.data.period=JSON.parse(res.data.period);
+        res.data.qTypeList.map((v,k)=>{
+          if(v.qType==''){
+            res.data.qTypeList.splice(k,1);
+          }
+        })
+
+        this.typeLists=this.typeLists.concat(res.data.qTypeList);
+
+        delete res.data.qTypeList;
         this.ruleForm={...res.data};
 
       }).catch(e=>{

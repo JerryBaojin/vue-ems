@@ -53,6 +53,7 @@ export default new Router({
         children:[
             {
                 path: 'index',
+                name: 'index',
                 component: resolve => require(['../components/front/index.vue'], resolve),
                 meta: { title: '选择页面',index:0}
             },

@@ -4,44 +4,66 @@
   				<div class="hm_icon">
   					<span class="f-l">
               <router-link to="person">
-    						<img src="http://thirdwx.qlogo.cn/mmopen/vi_32/B9eDDgEoS90sHsmFEicczSyHE7KjR3IE4dH7mUEicswWSotOYFMgeMSXiaqY8scXruzCzaaRFbmzccwDQaBmRUSaA/132" style="" />
-    						<h2>小萌<br><small>积分：2050</small></h2>
+    						<img :src="uInfo.headImg" style="" />
+    						<h2>{{uInfo.nickname}}<br>
+                  <!-- <small>积分：2050</small> -->
+                </h2>
               </router-link>
   					</span>
   					<span class="f-r">
               <router-link to="Rank"><img src="../../../static/img/ranking.png" alt=""></router-link>
-  			   
+
   					</span>
   				</div>
   				<div class="title">
   					<h1>每日一题，学习教育</h1>
   				</div>
+          <div class="btns" v-if="editAble">
+             <el-button size="medium" type="primary" @click="handClick('before')" :disabled="index==0" icon="el-icon-arrow-left">上一题</el-button>
+             <el-button size="medium"  @click="handClick('next')" :disabled="index==-1" type="primary">下一题<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+         </div>
   			</header>
-        <v-questions :msg="type"></v-questions>
 
+        <component :is="currentView" :msg="type"  ref="child" v-on:disableEdit="hideStep" v-on:currentNow="nowTag" keep-alive></component>
   </div>
 </template>
 <script type="text/javascript">
 import Wx from './WeixinJssdk';
-import vQuestions from './QuestionM';
+import vQuestions from './QuestionS';
   export default {
     data(){
       return{
-
+          uInfo:{
+              headImg:"",
+              nickname:""
+          },
+          currentView:"vQuestions",
+              index:0,
+              editAble:true
       }
     },
+    methods:{
+             hideStep(type){
+               this.editAble=type;
+             },
+             handClick(action){
+               this.$refs.child.chooseQes(action);
+             },
+             nowTag(id){
+               this.index=id;
+             }
+       },
     components:{
       vQuestions
     },
     computed:{
       type(){
-          console.log(this.$route.params)
         return this.$route.params.type
       }
     },
     mounted(){
       if(this.$route.params.hasOwnProperty("type")){
-
+            this.uInfo=JSON.parse(localStorage.getItem("wxUser-jw"))['__Uinfos'];
       }else{
         this.$router.push("/front/index");
       }
@@ -58,6 +80,18 @@ import vQuestions from './QuestionM';
     }
   }
 </script>
-<style media="screen">
-
+<style media="screen" scoped>
+  .btns{
+    margin:31px;
+    display: flex;
+flex-direction: row;
+flex-wrap: nowrap;
+justify-content: space-between;
+  }
+  .el-button--medium {
+    font-size: 25px;
+  }
+  .f-l h2 {
+        margin: 35px 0 0 20px;
+  }
 </style>

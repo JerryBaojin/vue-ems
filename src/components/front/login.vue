@@ -30,9 +30,11 @@ let global={
     workUnit:'',
     nickname:''
   },
+  openid:null,
   phone:null,
   url:"api/frontUser.php",
-  validateCode:null
+  validateCode:null,
+  code:null
 }
   export default {
     data(){
@@ -113,22 +115,43 @@ let global={
             }
             this.$axios.post(global.url,{
               action:"authPhone",
+              openid:global.openid,
               phone:this.phone
             }).then(res=>{
               if(res.data.msg<1){
                 alert("发送验证码失败!");
                 return false;
               }
-              if (res.data.userinfo) {
-                global.phone=this.phone;
-                global.userInfo=res.data.userinfo,
-                global.code=res.data.code
+
+              if ( res.data.userinfo.dirName && res.data.userinfo.openid ) {
+                  let __Uinfos=res.data.userinfo;
+                localStorage.setItem("wxUser-jw",JSON.stringify({
+                  _openid:global.openid,
+                  lastModeTime:new Date().getTime(),
+                  __Uinfos:{
+                    openid:res.data.userinfo.openid,
+                    nickname:res.data.userinfo.dirName,
+                    headImg:res.data.userinfo.headImg
+                  }
+                }))
+                this.$router.push({name:"index"});
+
               }
+              if (res.data.userinfo) {
+
+                global.userInfo=res.data.userinfo
+
+              }
+              global.code=res.data.code;
+               global.phone=this.phone;
               //同步更新localStorage
+              this.validateCode.day==new Date().getDate()?this.validateCode.times++:this.validateCode.times=1;
+
               this.validateCode.day=new Date().getDate();
-              this.validateCode.times++;
+
               localStorage.setItem("validateCode",JSON.stringify(this.validateCode));
               global.validateCode=this.validateCode;
+
               this.$emit('next');
 
             })
@@ -143,15 +166,16 @@ let global={
           localStorage.getItem("validateCode")?this.validateCode=JSON.parse(localStorage.getItem("validateCode")):null;
         }
       }
-      ,step2:{
+      ,
+      step2:{
         template:`
           <div>
           <div class="form-group" id="step2">
-            <input type="text"  v-show="userInfo.name !=''" disabled='true' v-model="userInfo.name"   />
-            <input type="text"  v-show="userInfo.workUnit !=''" disabled='true' v-model="userInfo.workUnit"   />
-            <input type="text"  v-model="userInfo.nickname"  placeholder="请输入昵称"/>
+            <input type="text"  v-show="userInfo.name" disabled='true' v-model="userInfo.name"   />
+            <input type="text"  v-show="userInfo.workUnit" disabled='true' v-model="userInfo.workUnit"   />
+            <input type="text"  v-model="userInfo.nickname"  maxlength="8" placeholder="请输入昵称"/>
             <div style="margin-top: 15px;">
-              <input placeholder="请输入验证码" type="number"  v-model="underCheck" />
+              <input placeholder="请输入验证码" maxlength="4" type="number"  v-model="underCheck" />
                 <el-button @click="checkPhone" style="position: absolute;width: 82px;right: 30px;height: 68px;line-height:55px;" type="info" :disabled="!reValidate">{{counter}}{{(typeof counter=='number' && counter!=NaN)?'s':''}}</el-button>
             </div>
           </div>
@@ -206,8 +230,11 @@ let global={
                 }
                 global.code=res.data.code
                 //同步更新localStorage
+                global.validateCode.day==new Date().getDate()?global.validateCode.times++:global.validateCode.times=1;
+
+
                 global.validateCode.day=new Date().getDate();
-                global.validateCode.times++;
+
                 localStorage.setItem("validateCode",JSON.stringify(global.validateCode));
                 this.counterStart();
               })
@@ -226,14 +253,57 @@ let global={
                 }
               },1000)
             },
-          confirm(){
-            this.$axios.post(global.url,{
-              ...this.userInfo,
-              acrion:"userRegist"
-            }).then(res=>{
-              console.log(res);
-            })
-          }
+            confirm(){
+
+              //判断验证码是否一致
+              if (this.underCheck!=global.code) {
+                alert("验证码错误!");return;
+              }
+              //判断中文昵称
+
+              if (this.userInfo.nickname.length>8) {
+                this.$message.error("昵称最长只能8个字符!")
+                  return false;
+              }
+
+              this.$axios.post(global.url,{
+                ...this.userInfo,
+                phone:global.phone,
+                openid:global.openid,
+                action:"userRegist"
+              }).then(res=>{
+                switch (res.data.code) {
+                  case 199:
+                    this.$message.error("昵称必须全为中文，且最长只能8个字符!");
+                    break;
+                  case 404:
+                    this.$message.error("昵称非法!");
+                    break;
+                  case 0:
+                      this.$message.error("更新信息失败!")
+                      break;
+                  case 201:
+                      this.$message({
+                        message:"设置成功!",
+                        type:"success",
+                      })
+                      let __Uinfos=res.data.infos;
+                      //保存openid信息
+                      localStorage.setItem("wxUser-jw",JSON.stringify({
+                        _openid:global.openid,
+                        lastModeTime:new Date().getTime(),
+                        __Uinfos:__Uinfos
+                      }))
+                      this.$router.push({name:"index"})
+                        break;
+                    case 200:
+                        this.$message.error("网络错误");
+                        break;
+                  default:
+                      this.$message.error("网络错误，请稍后重试");
+                }
+              })
+            }
         },
         mounted(){
           this.counterStart();
@@ -259,43 +329,15 @@ let global={
             location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
             return false;
         }
-        this.$axios.post(this.url,{
-          action:"auth",
-          UID:this.counts,
-          pwd:this.pwd,
-          openid:this.openid
-        }).then(res=>{
-            switch (res.data) {
-                case 100:
-                //未绑定微信
-                location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
-                break;
-                case 101:
-                this.validate.counts=true;
-                break;
-                case 102:
-                this.validate.pwd=true;
-                break;
-                case 200:
-                  this.$message.success("登录成功!");
-                   this.$router.push({name:"person",params:{UID:this.counts}})
-                  break;
-                case 103:
-                    this.$message.error("网络错误!");
-                  break;
-              default:
 
-            }
-        }).then(e=>{
-
-        })
       }
     },
     created(){
       let that=this;
 
       if(this.$route.query.hasOwnProperty('openid')){
-          that.openid=this.$route.query.openid;
+          that.openid=global.openid=this.$route.query.openid;
+
       }else{
           location.href="http://wx1.scnjnews.com/dati/api/useropenid.php";
       }
@@ -306,65 +348,65 @@ let global={
   }
 </script>
 <style media="screen" scoped>
-.el-step__title{
-  font-size: 28px;
-}
-.step2 input{
-  margin:10px 0 10px;
-}
-  .slide-right-enter-active,
-  .slide-right-leave-active,
-  .slide-left-enter-active,
-  .slide-left-leave-active {
-  will-change: transform;
-  transition: all 500ms;
-  position: absolute;
+  .el-step__title{
+    font-size: 28px;
   }
-  .slide-right-enter {
-  opacity: 0;
-  transform: translate3d(-100%, 0, 0);
+  .step2 input{
+    margin:10px 0 10px;
   }
-  .slide-right-leave-active {
-  opacity: 0;
-  transform: translate3d(100%, 0, 0);
-  }
-  .slide-left-enter {
-  opacity: 0;
-  transform: translate3d(100%, 0, 0);
-  }
-  .slide-left-leave-active {
-  opacity: 0;
-  transform: translate3d(-100%, 0, 0);
-  }
-  .steps{
+    .slide-right-enter-active,
+    .slide-right-leave-active,
+    .slide-left-enter-active,
+    .slide-left-leave-active {
+    will-change: transform;
+    transition: all 500ms;
     position: absolute;
-    width: 71%;
-    bottom: 0;
-    height: 320px;
-    margin: 0 auto;
-    left: 0;
-    right: 0;
-  }
-  .el-message__content,.el-message__icon{
-    font-size: 30px;
-  }
-  .el-step__title {
-    font-size: 30px;
-  }
-  .error-notic{
-    display: block !important;
-    color: #ff4e00;
-    margin-left: 5%;
-    font-size: 30px;
-  }
-  .login-con{
-    width: 560px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
-    height: 300px;
-  }
+    }
+    .slide-right-enter {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+    }
+    .slide-right-leave-active {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+    }
+    .slide-left-enter {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+    }
+    .slide-left-leave-active {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+    }
+    .steps{
+      position: absolute;
+      width: 71%;
+      bottom: 0;
+      height: 320px;
+      margin: 0 auto;
+      left: 0;
+      right: 0;
+    }
+    .el-message__content,.el-message__icon{
+      font-size: 30px;
+    }
+    .el-step__title {
+      font-size: 30px;
+    }
+    .error-notic{
+      display: block !important;
+      color: #ff4e00;
+      margin-left: 5%;
+      font-size: 30px;
+    }
+    .login-con{
+      width: 560px;
+      position: absolute;
+      top: -150px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      height: 300px;
+    }
 </style>

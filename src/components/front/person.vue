@@ -46,18 +46,7 @@
       }
     },
     mounted(){
-    const uid=this.$route.params.UID;
-    !uid?this.$router.push({path:"/front/login"}):null;
-        this.$axios.post(this.url,{
-          action:"getUserInfo",
-          uid
-        }).then(res=>{
-          this.info=res.data;
-          localStorage.setItem("token",uid);
-          localStorage.setItem(uid,JSON.stringify(res.data));
-        }).catch(e=>{
-          console.log(e)
-        })
+
     }
   }
 </script>
