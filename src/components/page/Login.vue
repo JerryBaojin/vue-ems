@@ -8,7 +8,10 @@
                 </el-form-item>
 
                 <el-form-item prop="password">
-                    <el-input type="password" placeholder="验证码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')"></el-input>
+                    <el-input type="number" placeholder="验证码" maxlength="4" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
+                       <template  slot="append" ><span @click="getCode" class="controllArea">{{validate.code==null?'获取验证码':`${validate.counter}s`}}</span></template>
+                    </el-input>
+
                 </el-form-item>
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
@@ -23,7 +26,7 @@
         data: function(){
           let validateUserName=(rule,value,callback)=>{
             if (value === '') {
-              callback(new Error('请输入账号'));
+              callback(new Error('请输入手机号'));
              } else {
 
                callback();
@@ -38,21 +41,63 @@
              }
           }
             return {
+              validate:{
+                code:null,
+                counter:60
+              },
                 ruleForm: {
                     username: '',
                     password: ''
                 },
                 rules: {
                     username: [
-                        { required: true, message: '请输入用户名', trigger: 'blur' }
+                        { required: true, message: '请输入手机号', trigger: 'blur' }
                     ],
                     password: [
-                        { required: true, message: '请输入密码', trigger: 'blur' }
+                        { required: true, message: '请输入验证码', trigger: 'blur' }
                     ]
                 }
             }
         },
         methods: {
+          counterStart(){
+            let his=localStorage.getItem("adminLoginCounter");
+            his?this.validate.counter=his:this.validate.counter=60;
+            let timer=setInterval(()=>{
+              if (this.validate.counter<=1) {
+                this.validate.code=null;
+                localStorage.removeItem("adminLoginCounter");
+                clearInterval(timer);
+              }else{
+                      localStorage.setItem("adminLoginCounter",this.validate.counter);
+                this.validate.counter--;
+              }
+            },1000)
+          },
+          getCode(){
+
+            if (this.code) {
+              return false;
+            }
+
+            if (!this.ruleForm.username || !/^1[3|4|5|6|7|8][0-9]\d{8}$|^\d{8}$/.test(this.ruleForm.username)) {
+              this.$message.error("请输入正确的手机号!");
+              return false;
+            }
+
+            this.$axios.post("api/frontUser.php",{
+              action:"getCode",
+              phone:this.ruleForm.username
+            }).then(res=>{
+              if(res.data.msg<1){
+                alert("发送验证码失败!");
+                return false;
+              }
+              this.validate.code=res.data.code;
+
+              this.counterStart();
+            })
+          },
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
@@ -60,15 +105,27 @@
                           action:"login",
                           data:{...this.ruleForm}
                         }).then(res=>{
-
-                          if(res.data.statusCode==200){
-                            localStorage.setItem('ms_username',this.ruleForm.username);
+                          switch (res.data.code) {
+                            case 403:
+                              this.$message.error("验证码错误!");
+                              break;
+                            case 404:
+                              this.$message.error("未找到该用户信息!");
+                            break;
+                            case 500:
+                                this.$message.error("请重新获取验证码!");
+                              break;
+                            case 200:
+                            localStorage.removeItem("adminLoginCounter");
+                            localStorage.setItem('ms_username',res.data.info.counter);
+                            localStorage.setItem('login_time',res.data.login_time);
+                            localStorage.setItem('role',res.data.info.role);
                             this.$router.push('/admin/dashboard');
-                          }else{
-                            let p="";
-                            res.data.statusCode==400?p="用户名错误!":p="密码错误!";
-                            this.$message.error(p);
+                            break;
+                            default:
+
                           }
+
                         }).catch(e=>{
                           console.log(e);
                         })
@@ -81,10 +138,22 @@
                 });
             }
         }
+        ,mounted(){
+              if (localStorage.getItem("adminLoginCounter")) {
+                this.validate.code=true;
+              this.counterStart();
+              }
+        }
     }
 </script>
 
 <style scoped>
+.controllArea:hover{
+  cursor: pointer !important;
+}
+.el-select .el-input {
+  width: 130px;
+}
     .login-wrap{
         position: relative;
         width:100%;

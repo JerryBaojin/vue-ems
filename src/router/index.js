@@ -17,33 +17,38 @@ export default new Router({
                 {
                     path: 'dashboard',
                     component: resolve => require(['../components/page/Dashboard.vue'], resolve),
-                    meta: { title: '系统首页' }
+                    meta: { title: '系统首页',permission:"QA"}
                 },
                 {
                     path: 'sysstting',
                     component: resolve => require(['../components/page/SysSetting.vue'], resolve),
-                    meta: { title: '系统设置' }
+                    meta: { title: '系统设置',permission:"SA" }
                 },
                 {
                     path: 'adminuser',
                     component: resolve => require(['../components/page/AdminUser.vue'], resolve),
-                    meta: { title: '管理员管理' }
+                    meta: { title: '管理员管理',permission:"SA" }
                 },
                 {
                     path: 'table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
-                    meta: { title: '试题题库' }
+                    meta: { title: '试题题库',permission:"QA" }
                 },
                 {
                     path: 'tabs',
                     component: resolve => require(['../components/page/Tabs.vue'], resolve),
-                    meta: { title: '用户管理' }
+                    meta: { title: '用户管理',permission:"SA"}
                 },
                 {
                     path: 'scores',
                     component: resolve => require(['../components/page/scores.vue'], resolve),
-                    meta: { title: '积分管理' }
-                  }
+                    meta: { title: '积分管理',permission:"SA" }
+                },
+                {
+                    path: 'Log',
+                    component: resolve => require(['../components/page/Log.vue'], resolve),
+                    meta: { title: '日志查看',permission:"SA" }
+                }
             ]
         },
         {

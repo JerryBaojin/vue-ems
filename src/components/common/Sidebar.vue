@@ -59,13 +59,12 @@
                         icon: 'el-icon-document',
                         index: '/admin/adminuser',
                         title: '管理员管理'
-                    },
-
-                  
+                    }
+                    ,
                     {
-                        icon: 'el-icon-warning',
-                        index: 'permission',
-                        title: '权限测试'
+                        icon: 'el-icon-tickets',
+                        index: '/admin/Log',
+                        title: '日志查看'
                     }
                 ]
             }
