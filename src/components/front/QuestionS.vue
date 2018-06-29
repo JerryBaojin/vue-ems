@@ -42,7 +42,6 @@ export default {
         questions:[],
         current:0,
         qid:[],
-
         config:{},
         checkResult:{
           isNow:false,
@@ -62,7 +61,7 @@ export default {
   },
   computed:{
     scores(){
-        return this.doneGrade.filter((v)=>v.res==1).length*JSON.parse(sessionStorage.getItem('syssetting')).scoreR;
+  //      return this.doneGrade.filter((v)=>v.res==1).length*JSON.parse(sessionStorage.getItem('syssetting')).scoreR;
     }
   },
   watch:{

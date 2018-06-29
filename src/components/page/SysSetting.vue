@@ -27,7 +27,7 @@
           <el-radio-group v-model="ruleForm.type" name="">
             <el-radio  label="每日一测" value="single" name="mode"></el-radio >
             <el-radio  label="每周一测" value="week" name="mode"></el-radio >
-            <el-radio  label="套题测试" value="muti" name="mode"></el-radio >
+
           </el-radio-group>
         </el-form-item>
 

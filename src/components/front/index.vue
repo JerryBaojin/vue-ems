@@ -19,11 +19,17 @@
 
       </div>
 
-    	<div class="hm_btn" v-if="tag">
-    		  <div class="btn_bg"  v-show="false"   @click="toMain('single')">进入每日一题</div>
-          <el-button type="danger" class="enter" @click="toMain('muti')" round>开始答题</el-button>
-          <el-button type="danger" class="enter" @click="toMain('muti')" round>开始答题</el-button>
+    	<div class="hm_btn">
+    		 <div class="" v-if="configs.type=='每日一测'">
+             <el-button type="danger" class="enter" @click="toMain('single')" round>开始答题</el-button>
+         </div>
+        <div class="" v-else>
+               <el-button type="danger" class="enter" @click="toMain('muti')" round>开始答题</el-button>
+        </div>
     	</div>
+      <div class="hm_btn">
+          <el-button type="danger" class="enter" v-if="taotiExit" @click="toMain('taoti')" round>套题测试</el-button>
+      </div>
 
 
 <el-dialog
@@ -50,6 +56,7 @@ import Wx from './WeixinJssdk';
   export default {
     data(){
       return{
+        uid:null,
         code:"",
         dialogVisible: false,
         validateUrl:"api/validate/output.php?action=seed&x="+new Date().getTime(),
@@ -57,29 +64,53 @@ import Wx from './WeixinJssdk';
           answereD:false,
           delivery:"false"
         },
+        taotiExit:false,
         tag:true,
         params:null
       }
     },
+    computed:{
+
+    },
     methods:{
       checkCode(){
-
           if (this.code=='') {
             alert("请输入验证码");
           }else{
-            this.$axios.get("api/validate/output.php?action=check&code="+this.code).then(res=>{
-              if (res.data==1) {
-                alert("验证成功!")
+            if (this.params=="taoti") {
+
+              sessionStorage.setItem("syssetting",JSON.stringify(this.$store.state.taoTiconfig));
+              if (this.$store.state.taoTiconfig.sysstatus=="关闭") {
+                    alert("套题测试已关闭!请稍后再试!");
+                    return false;
+              }
+            }
+            let period=null;
+            this.params=="taoti"?period=JSON.parse(this.$store.state.taoTiconfig.period):period=JSON.parse(this.configs.period);
+
+            this.$axios.get(`api/validate/output.php?action=check&code=${this.code.toLowerCase()}&params=${this.params}&period=${JSON.stringify(period)}&uid=${this.uid}`).then(res=>{
+              if (res.data.validateRes==1) {
                 this.code='';
                 this.dialogVisible=false;
+                if (res.data.isAnswerd) {
+                  switch (this.params) {
+                    case "single":
+                      alert("今日你已经答过题了!请明天再来!");
+                      break;
+                      case "muti":
+                        alert("这周你已经答过题了!请下周再来!");
+                        break;
+                        case "taoti":
+                          alert("你已经答过题了!");
+                          break;
 
-                if (this.answereD) {
-                  alert("今日你已经答过题了!请明天再来!");
+                  }
+
                 }else if(this.configs.sysstatus=="关闭"){
                     alert("系统已关闭!请稍后再试!");
                 }else{
                   const timeChar=new Date().getTime();
-                  const period=JSON.parse(this.configs.period);
+
 
                   if(period==null){
                     this.$router.push({ name: 'main', params: { type: this.params }});
@@ -98,13 +129,11 @@ import Wx from './WeixinJssdk';
 
                   }
               }else{
-                alert("验证码错误！");
+
                 this.change();
               }
             }).catch(e=>{})
           }
-
-
       },
       change(){
         this.code="";
@@ -127,6 +156,7 @@ import Wx from './WeixinJssdk';
             let requestAuthUser=async ()=>{
                   let SysSetting=await this.getDates({action:"frontgetConfig"});
                     this.configs=SysSetting;
+                      this.$store.commit("setScoresConfig",JSON.parse(this.configs.ScoresConfig))
                     let dates={
                     "title":SysSetting.shareDesc,
                     "desc":SysSetting.shareDesc,
@@ -156,6 +186,20 @@ import Wx from './WeixinJssdk';
     },
           created: function () {
                   this.getInfo();
+                              this.uid=JSON.parse(localStorage.getItem("wxUser-jw")).__Uinfos.uid;
+                  this.$axios.post("api/sysConfig.php",{
+                    action:"getConfig"
+                  }).then(res=>{
+
+                            if (res.data.sysstatus=='开启') {
+                              this.taotiExit=true;
+                            }
+                    if (res) {
+                      this.$store.commit("setConfig",res.data)
+                    }
+                  }).catch(e=>{
+
+                  })
               }
   }
 </script>

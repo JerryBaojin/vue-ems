@@ -129,6 +129,7 @@ let global={
                   _openid:global.openid,
                   lastModeTime:new Date().getTime(),
                   __Uinfos:{
+                    uid:res.data.userinfo.uid,
                     openid:res.data.userinfo.openid,
                     nickname:res.data.userinfo.dirName,
                     headImg:res.data.userinfo.headImg

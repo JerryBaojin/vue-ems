@@ -4,7 +4,7 @@
         套题测试
       </div>
       <blockquote class="tips">
-        套题测试的配置是独立的，但是若整个系统被关闭了，套题测试同样处于关闭状态!
+        套题测试的配置是独立的，但是若整个系统被关闭了，套题测试同样处于关闭状态!在活动进行时间段里只能进行一次答题
     </blockquote>
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="150px" class="demo-ruleForm">
         <el-form-item label="是否关闭套题系统">
@@ -21,7 +21,7 @@
 
 
 
-        <el-form-item label="活动进行时间段">
+        <el-form-item label="活动进行时间段" prop="period">
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
@@ -102,7 +102,10 @@
           sysstatus:"关闭"
         },
         rules: {
-
+          period: [
+            {  required: true, message: '请设置活动进行时间' },
+            { type:"array", message: '请设置活动进行时间', trigger: 'blur' }
+          ],
           timu: [
             {  required: true, message: '请输入每套题的数目' },
             { type: 'number',min: 1, max: 100, message: '请输入每套题的数目', trigger: 'blur' }
