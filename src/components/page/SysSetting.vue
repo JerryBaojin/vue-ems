@@ -5,7 +5,7 @@
           系统通用设置
         </div>
         <blockquote class="tips">
-              这里对整个答题系统进行设置
+              这里对整个答题系统进行设置;
         </blockquote>
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="150px" class="demo-ruleForm">
         <el-form-item label="是否关闭系统">
@@ -120,11 +120,13 @@
     </div>
 
         <MoudleTest> </MoudleTest>
+        <ScoresSetting></ScoresSetting>
   </div>
 
   </template>
 <script>
 import MoudleTest from './ModuleTest.vue';
+import ScoresSetting from './ScoresSetting.vue';
   export default {
     data() {
       return {
@@ -169,7 +171,7 @@ import MoudleTest from './ModuleTest.vue';
       };
     },
     components:{
-      MoudleTest
+      MoudleTest,ScoresSetting
     },
     methods: {
       submitForm(formName) {

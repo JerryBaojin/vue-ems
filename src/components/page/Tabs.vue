@@ -7,13 +7,39 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量审核</el-button>
-                <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
-                    <el-option key="1" label="已激活" value="1"></el-option>
-                    <el-option key="2" label="未激活" value="0"></el-option>
+                <el-button type="primary" icon="delete" class="handle-del mr10" @click="DeleteAll">批量删除</el-button>
+                <el-select v-model="select_cate" placeholder="筛选用户" class="handle-select mr10">
+                    <el-option key="1" label="外部用户" value="1"></el-option>
+                    <el-option key="2" label="内部用户" value="0"></el-option>
                 </el-select>
                 <el-input v-model="select_word" placeholder="筛选微信昵称关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
+                <el-button type="primary" @click="dialogVisible = true">点击上传内部用户</el-button>
+
+                <el-dialog
+                  title="提示"
+                  :visible.sync="dialogVisible"
+                  width="30%"
+                >
+                  <span>
+                    <el-upload
+                      class="upload-demo"
+                      :action="url"
+                      :on-success="handleUploadSuccess"
+                      accept=".csv"
+                      :limit="1"
+                      :file-list="uploadedFiles"
+                      >
+                      <el-button size="small" type="primary" >点击上传</el-button>
+                      <div slot="tip" class="el-upload__tip">只能上传csv文件，且不超过20m</div>
+                      </el-upload>
+                  </span>
+                  <span slot="footer" class="dialog-footer">
+                    <el-button @click="dialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                  </span>
+                </el-dialog>
+
             </div>
 
             <el-table  max-height="650" :data="data" border style="width: 100%" ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelectionChange">
@@ -24,11 +50,12 @@
                 </el-table-column>
                 <el-table-column prop="name" label="真实姓名" >
                 </el-table-column>
-                <el-table-column prop="RegistTime" label="激活时间" >
+
+                <el-table-column prop="workUnit" label="所在区域" >
                 </el-table-column>
-                <el-table-column prop="scores" label="当前月的得分" >
+                <el-table-column prop="scores" sortable label="积分" >
                 </el-table-column>
-                <el-table-column
+                <!-- <el-table-column
                   label="历史得分"
                   width="180">
                   <template slot-scope="scope">
@@ -41,18 +68,21 @@
                       </div>
                     </el-popover>
                   </template>
-                </el-table-column>
-                <el-table-column  label="状态" >
+                </el-table-column> -->
+                <el-table-column  label="用户身份" >
                   <template slot-scope="scope">
                   <div class="">
-                    {{scope.row.oid==null?'未激活':'已激活'}}
+                    {{scope.row.role==1?'内部用户':'外部用户'}}
                   </div>
                   </template>
                 </el-table-column>
 
-                <el-table-column v-if="false" label="操作" width="180">
+                <el-table-column prop="InTime" label="注册时间" >
+                </el-table-column>
+
+                <el-table-column  label="操作" width="180">
                     <template slot-scope="scope">
-                        <el-button size="small" type="success" :disabled="scope.row.status==1" @click="handlePass(scope)">删除</el-button>
+                        <el-button size="small" type="success" :disabled="scope.row.status==1" @click="handleDelete(scope)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -87,13 +117,7 @@
         },
         watch:{
           select_cate(val){
-            this.tableData=this.backUpData.filter(v=>{
-              if(val==0){
-                return    v.oid==null;
-              }else{
-                return  v.oid!=null;
-              }
-            }
+            this.tableData=this.backUpData.filter(v=>v.role!=val
 
             )
           }
@@ -107,6 +131,14 @@
             }
         },
         methods: {
+          handleUploadSuccess(v){
+            if(v>0){
+              this.$message.success(`上传题库成功!`);
+              this.getData();
+            }else{
+              this.$message.error("文件删除出错!");
+            }
+          },
             handleCurrentChange(val) {
                 this.cur_page = val;
             },
@@ -119,13 +151,13 @@
             },
             getData() {
                 this.$axios.post(this.url, {
-                    action:"getUsers",
-                }).then(res=> {
-                  console.log(res);
-                    this.backUpData = res.data;
-                    this.tableData = res.data;
+                    action:"getUsers"
+                }).then((res)=> {
+                    console.log(res);
+                    this.backUpData = Array.from(res.data);
+                    this.tableData = Array.from(res.data);
                 }).catch(e=>{
-                  console.log(e);
+
                   this.$message.error("网络传输错误!");
                 })
             },
@@ -137,41 +169,14 @@
             filterTag(value, row) {
                 return row.tag === value;
             },
-            passAll() {
+            DeleteAll() {
                 const length = this.multipleSelection.length;
+
                 if (length==0) {
                   this.$message.warning("所选项无效!");
                   return false;
                 }
-                let __this=this;
-                let str = '';
-                this.pass_list = this.pass_list.concat(this.multipleSelection);
-                this.$axios.post(this.url,{
-                  action:"update",
-                  id:this.pass_list
-                }).then(res=>{
-                  if(res.data!=1){
-                    this.$message.error(`更新失败!`);
-                    return false;
-                  }
-                  __this.pass_list.map((v)=>{
-                    __this.tableData.map((value,key)=>{
-
-                      if(value.id==v){
-                        __this.tableData[key].status=1
-                      }
-                    })
-                    __this.backUpData.map((_value,_key)=>{
-                      if(_value.id==v){
-                        __this.backUpData[_key].status=1
-                      }
-                    })
-
-                  })
-                    this.$message.success(`更新成功!`);
-                }).catch(e=>{
-                  console.log(res)
-              })
+                this.handleDelete(this.multipleSelection);
                 this.multipleSelection = [];
             },
             handlePass(scope) {
@@ -197,8 +202,45 @@
                   console.log(res)
               })
             },
+            handleDelete(scope){
+              if (!Array.isArray(scope)) {
+                scope=[scope.row];
+              }
+              let _id=[];
+
+              scope.map((v)=>{
+                _id.push(v.id)
+              })
+
+              this.$axios.post(this.url,{
+                action:"delete",
+                id:_id
+              }).then(res=>{
+                if(res.data!=1){
+                  this.$message.error(`删除失败!`);
+                  return false;
+                }
+                let tempArray=this.backUpData;
+                _id.map((v,k)=>{
+                  this.backUpData.map((v1,k1)=>{
+                    if (v==v1.id) {
+                        tempArray.splice(k1,1)
+                    }
+                  })
+                })
+
+
+
+                this.backUpData=[...tempArray];
+                this.tableData=[...tempArray]
+                this.$message.success(`删除成功!`);
+              }).catch(e=>{
+                console.log(res)
+            })
+            },
             handleSelectionChange(val) {
-                this.multipleSelection = val.filter(v=>{ if (v.status==0) {return v.id;}}).map(v=>{return v.id});
+              console.log(val)
+                this.multipleSelection = val.filter(v=>v.id);
             }
 
         }

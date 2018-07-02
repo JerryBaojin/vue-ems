@@ -48,6 +48,7 @@ export default {
           result:false,
           toggle:false
         },
+        level:{},
         weChat:false,
         isLast:false,
         abledToClick:true,
@@ -61,6 +62,15 @@ export default {
   },
   computed:{
     scores(){
+      let s=0;
+      this.doneGrade.map((v)=>{
+        if (v.res==1) {
+        s+=this.level[v.types]
+        }
+      }
+      )
+      return s;
+
   //      return this.doneGrade.filter((v)=>v.res==1).length*JSON.parse(sessionStorage.getItem('syssetting')).scoreR;
     }
   },
@@ -127,6 +137,7 @@ export default {
           this.questions[i].correctType.join("")==__nowAnswers.sort().join("")?res=1:res=0;
           this.doneGrade.push({
             index:i,
+            types:this.questions[i].types,
             choosed:__nowAnswers.sort(),
             res,
             correct:this.questions[i].correctType
@@ -145,9 +156,12 @@ export default {
        });
       this.$axios.post(this.url,{
         action:"saveQinfos",
-        timeChar:new Date().getTime(),
+        _qCounts:this.doneGrade.length,
+        timeChar:this.$store.state.currentTimeChar,
         openid:JSON.parse(localStorage.getItem("wxUser-jw"))._openid,
-        datas:this.doneGrade
+        uid:JSON.parse(localStorage.getItem("wxUser-jw")).__Uinfos.uid,
+        _qTypes:this.msg,
+        scores:this.scores
       }).then(res=>{
 
         switch (res.data.errorCode) {
@@ -242,6 +256,7 @@ export default {
   },
   props:['msg'],
   mounted(){
+    this.level=this.$store.state.scoresLevel
       localStorage.getItem("wxUser-jw")?null:this.$router.push("/front/index");
     Array.prototype.shunt=function(){
       //随机洗牌算法

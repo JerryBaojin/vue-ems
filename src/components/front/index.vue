@@ -110,7 +110,7 @@ import Wx from './WeixinJssdk';
                     alert("系统已关闭!请稍后再试!");
                 }else{
                   const timeChar=new Date().getTime();
-
+                  this.$store.commit("setCurrentTimeChar",res.data.currentTimeChar);
 
                   if(period==null){
                     this.$router.push({ name: 'main', params: { type: this.params }});

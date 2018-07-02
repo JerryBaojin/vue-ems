@@ -8,8 +8,8 @@ const store=new Vuex.Store({
       nowLogin:{
         role:"admin"
       },
+      currentTimeChar:'',
       scoresLevel:{
-
       },
       taoTiconfig:null
     },
@@ -22,6 +22,9 @@ const store=new Vuex.Store({
         },
         setScoresConfig(state,date){
           state.scoresLevel=date
+        },
+        setCurrentTimeChar(state,date){
+            state.currentTimeChar=date
         }
     }
 })

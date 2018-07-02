@@ -1,5 +1,5 @@
   <template id="">
-    <div class="containers">
+    <div class="containers" style="max-width:34%;"> 
       <div class="card_title">
         套题测试
       </div>
