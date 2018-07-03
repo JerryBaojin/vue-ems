@@ -117,14 +117,15 @@ a {
 .g-core-image-corp-container .info-aside {
     height: 45px;
 }
-
+.el-upload--text:hove{
+  cursor:pointer;
+}
 .el-upload--text {
     background-color: #fff;
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
     box-sizing: border-box;
-    width: 360px;
-    height: 180px;
+
     text-align: center;
     cursor: pointer;
     position: relative;

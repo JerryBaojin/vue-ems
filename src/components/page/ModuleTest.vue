@@ -1,5 +1,5 @@
   <template id="">
-    <div class="containers" style="max-width:34%;"> 
+    <div class="containers" style="max-width:34%;">
       <div class="card_title">
         套题测试
       </div>
@@ -25,6 +25,7 @@
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
+              style="width:200px;"
               v-model="ruleForm.period"
               value-format="timestamp"
               type="datetimerange"
