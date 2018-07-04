@@ -203,6 +203,7 @@
               })
             },
             handleDelete(scope){
+            
               if (!Array.isArray(scope)) {
                 scope=[scope.row];
               }

@@ -10,29 +10,33 @@
       <el-form-item
         label="积分区域设置(从低到高)"
         prop="age"
-
       >
         <el-input type="age" v-model="lvs" auto-complete="off"></el-input>
+        <div class="computedSize">
+          初级每个小等级相差{{area['d1']}}分;
+          中级每个小等级相差{{area['d2']}}分;
+          终级每个小等级相差{{area['d3']}}分;
+        </div>
       </el-form-item>
       <el-form-item
         label="头衔设置"
-
       >
         <el-input type="age" v-model="lvn" auto-complete="off"></el-input>
       </el-form-item>
 
+
       <div class="pic_arrays">
 
-      <div class="pic_holder">
-        <div class="label-holder">初级头衔图片:</div>
+      <div class="pic_holder">''
+        <div class="label-holder">{{ll[0]}}图片:</div>
         <el-upload
           class="avatar-uploader"
           accept="image/*"
           name="lv"
           :action="ajaxUrl+'?x=lv1'"
           :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-  >
+          :on-success="handleAvatarSuccess">
+
           <img v-if="imageUrl.lv1" :src="imageUrl.lv1" class="avatar">
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
@@ -41,37 +45,35 @@
 
 
       <div class="pic_holder">
-        <div class="label-holder">中级头衔图片:</div>
+        <div class="label-holder">{{ll[1]}}图片:</div>
         <el-upload
           class="avatar-uploader"
           accept="image/*"
           name="lv"
           :action="ajaxUrl+'?x=lv2'"
           :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-  >
-          <img v-if="imageUrl.lv2" :src="imageUrl.lv2" class="avatar">
+          :on-success="handleAvatarSuccess">
+          <img v-if="imageUrl.lv2" :src="imageUrl.lv2" class="avatar" />
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
       </div>
 
       <div class="pic_holder">
-        <div class="label-holder">高级头衔图片:</div>
+        <div class="label-holder">{{ll[2]}}图片:</div>
         <el-upload
           class="avatar-uploader"
           accept="image/*"
           name="lv"
           :action="ajaxUrl+'?x=lv3'"
           :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-  >
+          :on-success="handleAvatarSuccess">
           <img v-if="imageUrl.lv3" :src="imageUrl.lv3" class="avatar">
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
       </div>
 
       <div class="pic_holder">
-        <div class="label-holder">终级头衔图片:</div>
+        <div class="label-holder">{{ll[3]}}图片:</div>
         <el-upload
           class="avatar-uploader"
           accept="image/*"
@@ -111,6 +113,25 @@ export default {
      };
    },
    computed:{
+
+     area(){
+       if (this.ScoresConfig) {
+         let levels=JSON.parse(this.ScoresConfig.socres_lv);
+         return {
+           d1:parseInt((levels[1]-levels[0])/10),
+           d2:parseInt((levels[2]-levels[1])/10),
+           d3:parseInt((levels[3]-levels[2])/10)
+         }
+     }else {
+       return {
+         d1:null,
+         d2:null,
+         d3:null
+       }
+     }
+
+
+     },
      imageUrl:{
        get:function(){
          if (!this.ScoresConfig) {
@@ -138,14 +159,24 @@ export default {
         this.ScoresConfig['socres_lv']=JSON.stringify(v.split(","))
        }
      },
-     lvn(){
-       if (this.ScoresConfig) {
-
-          return JSON.parse(this.ScoresConfig.socres_name).join(",");
-       }else{
-         return "初级学童,优秀学生,三好学生,至尊学霸";
+     lvn:{
+       get:function(){
+         if (this.ScoresConfig) {
+            return JSON.parse(this.ScoresConfig.socres_name).join(",");
+         }else{
+           return "初级学童,优秀学生,三好学生,至尊学霸";
+         }
+       },
+       set:function(v){
+             this.ScoresConfig['socres_name']=JSON.stringify(v.split(","))
        }
-
+     },
+     ll(){
+       if (this.ScoresConfig) {
+         return JSON.parse(this.ScoresConfig.socres_name);
+       }else{
+         return ["","","",""];
+       }
      }
    },
    methods: {
@@ -159,6 +190,15 @@ export default {
        }
      },
      submitForm(formName) {
+       //对数据作检验
+       const levels=JSON.parse(this.ScoresConfig.socres_lv);
+       if (levels[1]>levels[0] && levels[2]>levels[1] && levels[3]>levels[2]) {
+         //null
+       }else{
+           this.$message.error("积分区域应该从低到高设置!");
+           return false;
+       }
+
        this.$refs[formName].validate((valid) => {
          this.$axios.post(this.ajaxUrl,{
            action:"setConfig",

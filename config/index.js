@@ -16,7 +16,7 @@ module.exports = {
           changeOrigin:true
       },
       '/ms':{
-          target: 'https://www.easy-mock.com/mock/592501a391470c0ac1fab128',
+          target: 'https://www.easy-mock.com/mock/5b3c79dafd1ca96a4ed24884/scores/scores',
           changeOrigin: true
       }
     },
