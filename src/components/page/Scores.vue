@@ -16,11 +16,6 @@
                     <el-option key="5" label="历史总排名" value="total" ></el-option>
                 </el-select>
 
-                <el-select v-model="select_people" placeholder="筛选内/外部人员" class="handle-select mr10">
-                    <el-option key="2" label="默认" value="defaultPeople"></el-option>
-                    <el-option key="1" label="内部人员" value="inner"></el-option>
-                    <el-option key="3" label="外部人员" value="outter"></el-option>
-                </el-select>
 
                 <el-input v-model="select_word" placeholder="筛选微信昵称关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
@@ -40,7 +35,7 @@
                 <el-table-column prop="scores" sortable label="积分">
 
                 </el-table-column>
-                <el-table-column    prop="workUnit" label="所属区域或单位">
+                <el-table-column  width="130"  :filters="areFilter" :filter-method="filterArea" prop="workUnit" label="所属区域或单位">
 
                 </el-table-column>
                 <el-table-column :filter-method="filterRole" prop="role" :filters="[{text:'内部人员',value:'1'},{text:'外部人员',value:'0'}]"   label="人员分类" >
@@ -82,12 +77,11 @@
                 url: 'https://www.easy-mock.com/mock/5b3c79dafd1ca96a4ed24884/scores/scores',
                 tableData: [],
                 backUpData: [],
-                uploadedFiles:[],
+                areFilter:[],
                 selectOptions:[],
                 cur_page: 1,
                 multipleSelection: [],
                 select_cate: 'total',
-                select_people:"defaultPeople",
                 select_word: '',
                 pass_list: [],
                 dialogVisible: false,
@@ -101,45 +95,25 @@
         watch:{
           select_cate(val){
               myWorker.postMessage({action:val})
-          },
-          select_people(val){
-              myWorker.postMessage({action:val})
           }
-
         },
         created() {
             this.getData();
         },
         computed: {
+
             data() {
+
                   let that=this;
-                  var p=[...that.tableData.slice((this.cur_page-1)*10,this.cur_page*10)];
-
-                /*  p.map((v,k)=>{
-                      p[k].rank=k+1;
-                    if(that.select_cate==1 || that.select_cate==''){
-                      p[k]['nowDates']=v.scores;
-                      p[k]['tag']="当前月";
-                    }else{
-                      v.monthCount.map(value=> {
-                        if(value.month==that.select_cate){
-                            p[k]['nowDates']=value.scoress;
-                            console.log(value)
-                        }
-                      })
-                      p[k]['tag']=that.select_cate;
-
-                    }
-                  })
-                  */
-                  return p;
+                  return [...that.tableData.slice((this.cur_page-1)*10,this.cur_page*10)];
             }
         },
         methods: {
+          filterArea(value,row){
+                return row.workUnit==value;
+          },
           filterRole(value,row){
             return row.role==value;
-
-
           },
           handleSort(d){
             if (d.order=='descending') {
@@ -154,6 +128,11 @@
                   case "total":
 
                       this.tableData =d.data;
+                      if (d.hasOwnProperty("areFilter")) {
+                            this.areFilter=d.areFilter.map((v,k)=>{
+                            return JSON.parse(v);
+                            })
+                      }
                     break;
                   default:
 
@@ -180,10 +159,12 @@
                 }).then(res=> {
               //    this.$store.commit("setScores",res.data);
                   //存到vuex中
+
                   myWorker.postMessage({action:"total",data:res.data});
                   myWorker.onmessage=(e)=>{
                     this.dealDates(e.data)
                   }
+
                     this.backUpData = res.data[0];//原始数据
                   return false;
                   let tempArray=[];
