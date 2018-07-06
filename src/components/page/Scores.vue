@@ -94,7 +94,20 @@
         },
         watch:{
           select_cate(val){
-              myWorker.postMessage({action:val})
+            //发送vuex中存储的数据
+            if (val=="total") {
+              myWorker.postMessage({
+                action:val,
+                data:this.$store.state.scoresInfo
+              })
+            }else{
+              myWorker.postMessage({
+                action:"sortDiff",
+                type:val,
+                data:this.$store.state.scoresInfo
+              })
+            }
+
           }
         },
         created() {
@@ -157,7 +170,7 @@
                 this.$axios.post(this.url, {
                     action:"scoresgetUsers",
                 }).then(res=> {
-              //    this.$store.commit("setScores",res.data);
+                  this.$store.commit("setScores",res.data);
                   //存到vuex中
 
                   myWorker.postMessage({action:"total",data:res.data});
@@ -193,8 +206,15 @@
                 return row.tag === value;
             },
             exportExcel() {
+                  this.$axios.post("api/__excel.php",{
+                    data:this.tableData
+                  }).then(res=>{
+                      window.location.href="api/"+res.data;
+                  
+                  }).catch(e=>{
+                    console.log(e)
+                  })
 
-            window.location.href="api/__excel.php?type="+this.select_cate;
             },
             handlePass(scope) {
                 this.$axios.post(this.url,{

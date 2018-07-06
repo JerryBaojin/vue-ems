@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 Vue.use(Vuex);
 const store=new Vuex.Store({
     state:{
-      scores:{},
+      scoresInfo:{},
       loginState:{},
       nowLogin:{
         role:"admin"
@@ -28,7 +28,7 @@ const store=new Vuex.Store({
             state.currentTimeChar=date
         },
         setScores(state,date){
-            state.scores=date
+            state.scoresInfo=date
         }
     }
 })

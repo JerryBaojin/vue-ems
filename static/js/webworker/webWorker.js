@@ -8,60 +8,93 @@ let timeQuater={
   seson:0,
   currentWeekMonday:0
 }
-let computedArray=[];
+
 onmessage=function(e){
 
   let action=e.data.action;
+  if (e.data.data) {
+      var data=e.data.data;
+      tempArray={...data};
+  }else{
+      data={...tempArray};
+  }
 
-  let data=e.data.data || tempArray;
-  tempArray=data;
-if (e.data.seson) {
-  timeQuater.seson=e.data.seson;
-  timeQuater.currentWeekMonday=e.data.currentWeekMonday;
-}
 
   switch (action) {
     case "total":
-      sort(data['userInfo']);
-
+      var computedArrayC=data['userInfo'];
+    //  sort(t['userInfo']);
+    if (uidGroup.length==0) {
+      tempArray.dati_record.map((v,k)=>{
+        let tempHolderArray=new Array();
+        tempHolderArray.push(v);
+        uidGroup[v.uid]?uidGroup[v.uid].push(v):uidGroup[v.uid]=tempHolderArray;
+      })
+    }
+    computedArrayC.map((v1,k)=>{
+       if (uidGroup[v1.UID]) {
+         let sortEd= uidGroup[v1.UID];
+         let newSocres=0;
+         sortEd.map(v=>{
+           newSocres+=v.scores;
+         })
+             computedArrayC[k]['scores']=newSocres;
+       }
+     })
+  sort(computedArrayC);
       break;
-    case "asc":
-        let t1=data['userInfo'];
-        t1.sort(function(a,b){
-          return a.scores-b.scores;
-        })
 
-        resType={
-          responseType:"total",
-          data:t1
-        }
-      break;
-    case "week":
-    //先分组，再分段
-    //一天的timechar=86400000
-    //fork一份
-    computedArray=[...tempArray['userInfo']];
-//http://192.168.220.100/newsedit/e5workspace/doclist.do?DocLibID=2&FVID=184&FilterID=22,22,@@DATE%3D2018-07-05_1@@&ListPage=13&CurrentPage=1&CatTypeID=0&ExtType=0&RuleFormula=&keyword=&tabID=tab_edit_doc_all&CountOfPage=20&beginDate=&endDate=
-//http://192.168.220.100/newsedit/e5workspace/doclist.do?DocLibID=2&FVID=186&FilterID=22,22,@@DATE%3D2018-07-05_1@@&ListPage=13&CurrentPage=1&CatTypeID=0&ExtType=0&RuleFormula=&keyword=&tabID=tab_edit_doc_all&CountOfPage=20&beginDate=&endDate=
-//http://192.168.220.100/newsedit/e5workspace/doclist.do?DocLibID=4&FVID=189&FilterID=16,@@DATE%3D2018-07-05_1@@&ListPage=10&CurrentPage=1&CatTypeID=0&ExtType=0&RuleFormula=&keyword=&tabID=tab_newsedit_department&CountOfPage=20&beginDate=&endDate=
+    case "sortDiff":
+    var t={...data}
+    computedArrayC=t['userInfo'];
+        let startAt=tempArray.currentWeekMonday;
+        const year=new Date().getFullYear();
+        const month=new Date().getMonth()+1;
+            switch (e.data.type) {
+              case "week":
+                startAt=tempArray.currentWeekMonday;
+                break;
+                case "month":
+                    let start_Day=`${year}-${month}`
+                    startAt=parseInt(new Date(start_Day).getTime()/1000);
+                  break;
+
+              case "quarter":
+              //一个季度3个月
+                const currentQuarter=Math.ceil(month/3)-1;
+                let start_Month=`${year}-${currentQuarter*3}`
+                startAt=parseInt(new Date(start_Month).getTime()/1000);
+                break;
+              case "year":
+                startAt=parseInt(new Date(`${year}-1-1`).getTime()/1000);
+                break;
+              default:
+
+            }
+
+
     let endTimeChar=parseInt((new Date().getTime())/1000);
-
-   computedArray.map((v,k)=>{
-      if (uidGroup[v.UID]) {
-      computedArray[k]['scores']= uidGroup[v.UID].filter(v=>{
-          console.log(formatDate(v.times))
-          if (v.times>timeQuater.currentWeekMonday && v.times<endTimeChar) {
-            console.log(12)
+        startAt=parseInt(startAt);
+        console.log(startAt)
+   computedArrayC.map((v1,k)=>{
+      if (uidGroup[v1.UID]) {
+      var  sortEd= uidGroup[v1.UID].filter(v=>{
+      //    console.log(formatDate(v.times),v.times,tempArray.currentWeekMonday,endTimeChar)
+          if (v.times>startAt && v.times<endTimeChar) {
             return true;
           }else{
-                console.log(21)
             return false
           }
-        }).reduce((a,b)=>a+b)
+        })
+        let newSocres=0;
+        sortEd.map(v=>{
+          newSocres+=v.scores;
+        })
+            computedArrayC[k]['scores']=newSocres;
       }
     })
-    console.log(computedArray)
-    sort(computedArray);
+
+    sort(computedArrayC);
       break;
     default:
 
@@ -72,13 +105,7 @@ if (e.data.seson) {
        responseType:null
      };
      //做好分组
-        if (uidGroup.length==0) {
-          tempArray.dati_record.map((v,k)=>{
-            let tempHolderArray=new Array();
-            tempHolderArray.push(v);
-            uidGroup[v.uid]?uidGroup[v.uid].push(v):uidGroup[v.uid]=tempHolderArray;
-          })
-        }
+
 
 
     }
@@ -86,15 +113,16 @@ if (e.data.seson) {
 }
 
 function sort(source){
-  let t=source;
+  let t=[...source];
   t.sort(function(a,b){
-    return b.scores-a.scores
+    return b.scores-a.scores;
   })
   t.map((v,k)=>{
     t[k]['rank']=k+1
     areFilter.push(JSON.stringify({text:v.workUnit,value:v.workUnit}))
   })
-  areFilter=[...new Set(areFilter)]
+  areFilter=[...new Set(areFilter)];
+
   resType={
     responseType:"total",
     data:t,
