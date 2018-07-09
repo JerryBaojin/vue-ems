@@ -667,13 +667,14 @@ header .f0 {
 	white-space: nowrap;
 	overflow: hidden;
 	text-align: left;
+  text-indent: 46px;
 }
 
 .col_4 {
-	width: 30%;
+	width: 25%;
 	text-align: center;
 	color: #f9500d;
-	font-size: 28px;
+	font-size: 24px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;

@@ -175,7 +175,10 @@ export default {
           case 200:
               res.data.money==0?this.weChat=false:this.weChat=true;
 
-              this.wxhb=res.data.money
+              this.wxhb=res.data.money;
+              if (res.data.lvInfos.levelUp) {
+                alert("恭喜你升至"+res.data.lvInfos.tag);
+              }
             break;
             case 203:
                   alert("你今天已经参与过答题了!");

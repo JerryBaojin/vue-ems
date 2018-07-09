@@ -12,8 +12,8 @@
                                     <div>{{role}}</div>
                                 </div>
                             </div>
-                            <div class="user-info-list">上次登录时间：<span>2018-01-01</span></div>
-                            <div class="user-info-list">上次登录地点：<span>东莞</span></div>
+                            <div class="user-info-list">登录时间：<span>{{LoginTime}}</span></div>
+
                         </el-card>
                       <el-button type="primary">备份数据库</el-button>
                     </el-col>
@@ -26,8 +26,8 @@
                             <div class="grid-content grid-con-1">
                                 <i class="el-icon-view grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">1234</div>
-                                    <div>用户访问量</div>
+                                    <div class="grid-num">{{counterNumber[1]}}</div>
+                                    <div>用户总量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -37,13 +37,13 @@
                             <div class="grid-content grid-con-2">
                                 <i class="el-icon-message grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">321</div>
-                                    <div>系统消息</div>
+                                    <div class="grid-num">{{counterNumber[0]}}</div>
+                                    <div>答题数量</div>
                                 </div>
                             </div>
                         </el-card>
                     </el-col>
-                    <el-col :span="8">
+                    <!-- <el-col :span="8">
                         <el-card shadow="hover" :body-style="{padding: '0px'}">
                             <div class="grid-content grid-con-3">
                                 <i class="el-icon-goods grid-con-icon"></i>
@@ -53,7 +53,7 @@
                                 </div>
                             </div>
                         </el-card>
-                    </el-col>
+                    </el-col> -->
                 </el-row>
 
 
@@ -68,6 +68,7 @@
         data() {
             return {
                 name: localStorage.getItem('ms_username'),
+                counterNumber:[],
                 todoList: [
                     {
                         title: '今天要修复100个bug',
@@ -96,9 +97,15 @@
             }
         },
         computed: {
+          LoginTime(){
+            return localStorage.getItem("login_time")
+          },
             role() {
                 return this.name === 'admin' ? '超级管理员' : '普通用户';
             }
+        },
+        mounted(){
+            this.counterNumber=JSON.parse(localStorage.getItem("counterNumber"));
         }
     }
 

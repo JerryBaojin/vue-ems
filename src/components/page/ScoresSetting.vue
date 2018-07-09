@@ -15,7 +15,7 @@
         <div class="computedSize">
           初级每个小等级相差{{area['d1']}}分;
           中级每个小等级相差{{area['d2']}}分;
-          终级每个小等级相差{{area['d3']}}分;
+          高级每个小等级相差{{area['d3']}}分;
         </div>
       </el-form-item>
       <el-form-item
@@ -27,7 +27,7 @@
 
       <div class="pic_arrays">
 
-      <div class="pic_holder">''
+      <div class="pic_holder">
         <div class="label-holder">{{ll[0]}}图片:</div>
         <el-upload
           class="avatar-uploader"

@@ -86,9 +86,13 @@
             }
 
             this.$axios.post("api/frontUser.php",{
-              action:"getCode",
+              action:"AdmingetCode",
               phone:this.ruleForm.username
             }).then(res=>{
+              if (res.data==403) {
+                alert("用户不存在，请检查手机号!")
+                return false;
+              }
               if(res.data.msg<1){
                 alert("发送验证码失败!");
                 return false;
@@ -117,6 +121,7 @@
                               break;
                             case 200:
                             localStorage.removeItem("adminLoginCounter");
+                            localStorage.setItem('counterNumber',res.data.counterNumber);
                             localStorage.setItem('ms_username',res.data.info.counter);
                             localStorage.setItem('login_time',res.data.login_time);
                             localStorage.setItem('role',res.data.info.role);

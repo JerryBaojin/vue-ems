@@ -12,11 +12,11 @@
 						<div class="per_con">
 							<div class="user_photo">
 								<img :src="info.headImg">
-								<span><strong>{{info.name}}</strong></span>
+								<span><strong>{{info.dirName}}</strong></span>
 							</div>
 							<div class="name_right">
-								<p class="p1">会员ID：{{info.UID}}</p>
-								<p>注册时间：{{info.RegistTime}}</p>
+								<p class="p1">会员昵称：{{info.nickname}}</p>
+								<p>获得称号：{{info.level}}</p>
 								<p class="p2">我的积分：{{info.scores}}</p>
 								<p>答题数：{{info.counts}}</p>
 							</div>
@@ -26,7 +26,7 @@
 				<div class="set_up">
 					<ul class="menu_list">
 						<li class="tiao">
-              <router-link to="pwd">修改密码</router-link>
+              <router-link to="pwd">修改昵称</router-link>
 						</li>
 						<li class="tiao">
               <router-link to="ponit">我的积分</router-link>
@@ -46,7 +46,8 @@
       }
     },
     mounted(){
-
+        this.$axios.post(this.url,{action:"getUserInfo",uid:JSON.parse(localStorage.getItem('wxUser-jw')).__Uinfos
+.uid}).then(res=>{this.info=res.data})
     }
   }
 </script>

@@ -34,17 +34,39 @@ export default {
       }
       this.getDatas();
     },
+    formatDate(t){
+
+    let  now=new Date(t*1000);
+  　　var year = now.getFullYear(),
+  　　month = now.getMonth() + 1,
+  　　date = now.getDate(),
+  　　hour = now.getHours(),
+  　　minute = now.getMinutes(),
+  　　second = now.getSeconds();
+  　　return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
+    },
     getDatas(){
       this.$axios.post("api/frontUser.php",{
         action:"viewScores",
-        uid:localStorage.getItem("token"),
+        uid:JSON.parse(localStorage.getItem('wxUser-jw')).__Uinfos
+.uid,
         index:this.index
       }).then(res=>{
         res.data.map((v,k)=>{
-          if(/,/.test(v.Qid)){
-            res.data[k]['type']="测试题";
-          }else{
-            res.data[k]['type']="每日一题";
+//          1531098809
+res.data[k]['times']=this.formatDate(v.times);
+          switch (v.type) {
+            case "single":
+                res.data[k]['type']="每日一题";
+              break;
+            case "muti":
+              res.data[k]['type']="每周一题";
+              break;
+              case "taoti":
+                res.data[k]['type']="套题测试";
+                break;
+            default:
+
           }
         })
         res.data.length==10?this.hasMore=true:this.hasMore=false;

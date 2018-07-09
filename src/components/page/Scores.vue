@@ -73,8 +73,8 @@
             return {
 
 
-              //  url: 'api/user.php',
-                url: 'https://www.easy-mock.com/mock/5b3c79dafd1ca96a4ed24884/scores/scores',
+                url: 'api/user.php',
+              //url: 'https://www.easy-mock.com/mock/5b3c79dafd1ca96a4ed24884/scores/scores',
                 tableData: [],
                 backUpData: [],
                 areFilter:[],
@@ -142,9 +142,18 @@
 
                       this.tableData =d.data;
                       if (d.hasOwnProperty("areFilter")) {
+                        d.areFilter.map((v,k)=>{
+
+                          if (v.text==null) {
+                             d.areFilter.splice(k,1);
+                          }
+
+                        })
                             this.areFilter=d.areFilter.map((v,k)=>{
+
                             return JSON.parse(v);
                             })
+
                       }
                     break;
                   default:
@@ -179,18 +188,7 @@
                   }
 
                     this.backUpData = res.data[0];//原始数据
-                  return false;
-                  let tempArray=[];
-                    res.data.map(v=>{
-                      if(v.monthCount.length>=1){
-                        v.monthCount.map(value=>{
-                            tempArray.push(value.month)
-                        })
-                      }
-                    })
-                    this.selectOptions=Array.from(new Set(tempArray));
 
-                    this.tableData = res.data;
 
                 }).catch(e=>{
                   console.log(e);
@@ -210,7 +208,7 @@
                     data:this.tableData
                   }).then(res=>{
                       window.location.href="api/"+res.data;
-                  
+
                   }).catch(e=>{
                     console.log(e)
                   })
