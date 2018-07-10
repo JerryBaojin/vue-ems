@@ -1,6 +1,7 @@
 <template >
   <div class="">
     <div class="login-box">
+
 		<div class="box-con tran">
 			<div class="login-con f-l">
         <transition  :name="transitionName">
@@ -10,17 +11,18 @@
 			</div>
 		</div>
 	</div>
-<div class="steps">
-  <el-steps :active="active" finish-status="success">
-    <el-step title="验证手机号"></el-step>
-    <el-step title="确认信息"></el-step>
-    <el-step title="登录"></el-step>
+<div class="steps" >
+  <el-steps  :active="active" finish-status="success">
+    <el-step class="tt" title="验证手机号"></el-step>
+    <el-step class="tt" title="确认信息"></el-step>
+    <el-step class="tt" title="登录"></el-step>
   </el-steps>
 </div>
   </div>
 </template>
 <script type="text/javascript">
 import Vue from 'vue';
+
 
 // 使用 Event Bus
 const bus = new Vue();
@@ -125,6 +127,10 @@ let global={
 
               if ( res.data.userinfo.dirName && res.data.userinfo.openid ) {
                   let __Uinfos=res.data.userinfo;
+                  if (res.data.userinfo.uid==0) {
+                    alert("身份检验出错!请重新登录!");
+                    return false;
+                  }
                 localStorage.setItem("wxUser-jw",JSON.stringify({
                   _openid:global.openid,
                   lastModeTime:new Date().getTime(),
@@ -350,9 +356,10 @@ let global={
   }
 </script>
 <style media="screen" scoped>
-  .el-step__title{
-    font-size: 28px;
+ .tt  .el-step__title{
+    font-size: 27px !important;
   }
+
   .step2 input{
     margin:10px 0 10px;
   }
@@ -392,9 +399,7 @@ let global={
     .el-message__content,.el-message__icon{
       font-size: 30px;
     }
-    .el-step__title {
-      font-size: 30px;
-    }
+
     .error-notic{
       display: block !important;
       color: #ff4e00;

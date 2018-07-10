@@ -35,7 +35,7 @@
 <el-dialog
   title="请输入验证码"
   :visible.sync="dialogVisible"
-  class="dialog"
+  custom-class="dialog"
 >
 <div class="sourceInput">
   <el-input style="height:53px" v-model="code" placeholder="请输入验证码"></el-input>
@@ -87,7 +87,10 @@ import Wx from './WeixinJssdk';
             }
             let period=null;
             this.params=="taoti"?period=JSON.parse(this.$store.state.taoTiconfig.period):period=JSON.parse(this.configs.period);
-
+            if (this.uid==0) {
+              //
+                this.$router.push({ name: 'index'})
+            }
             this.$axios.get(`api/validate/output.php?action=check&code=${this.code.toLowerCase()}&params=${this.params}&period=${JSON.stringify(period)}&uid=${this.uid}`).then(res=>{
               if (res.data.validateRes==1) {
                 this.code='';
@@ -178,9 +181,6 @@ import Wx from './WeixinJssdk';
       toMain(tag){
           this.params=tag;
           this.dialogVisible=true;
-
-
-
         }
 
     },
@@ -231,7 +231,7 @@ import Wx from './WeixinJssdk';
   font-size: 22px;
 }
 .el-dialog__title{
-  font-size: 22px;
+  font-size: 22px !important;
 }
 .sourceInput img{
   height: 68px;

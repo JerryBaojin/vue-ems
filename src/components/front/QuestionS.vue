@@ -18,7 +18,7 @@
                   </div>
                 </div>
                 <div id="a1" v-show="checkResult.toggle">
-                  <p>正确答案:{{value.correctIndex}}</p>
+                  <p style="font-size:40px;">正确答案:{{value.correctIndex}}</p>
                 </div>
                   </div>
               </div>
@@ -70,8 +70,6 @@ export default {
       }
       )
       return s;
-
-  //      return this.doneGrade.filter((v)=>v.res==1).length*JSON.parse(sessionStorage.getItem('syssetting')).scoreR;
     }
   },
   watch:{
@@ -177,7 +175,9 @@ export default {
 
               this.wxhb=res.data.money;
               if (res.data.lvInfos.levelUp) {
-                alert("恭喜你升至"+res.data.lvInfos.tag);
+                if(res.data.lvInfos.tag!=='暂未获得称号'){
+                  3alert("恭喜你升至"+res.data.lvInfos.tag);
+                }
               }
             break;
             case 203:
