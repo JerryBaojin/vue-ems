@@ -15,7 +15,12 @@
                             <div class="user-info-list">登录时间：<span>{{LoginTime}}</span></div>
 
                         </el-card>
-                      <el-button type="primary">备份数据库</el-button>
+                        <div class="" v-if="this.href">
+                          <a class="el-button el-button--primary el-button--small" :href="href" download="datas.sql">点击下载备份数据</a>
+                        </div>
+                        <div v-else>
+                            <el-button type="primary"  @click="pauseWaiting">备份数据库</el-button>
+                         </div>
                     </el-col>
                 </el-row>
             </el-col>
@@ -67,6 +72,7 @@
         name: 'dashboard',
         data() {
             return {
+                href:"",
                 name: localStorage.getItem('ms_username'),
                 counterNumber:[],
                 todoList: [
@@ -96,6 +102,24 @@
                 ]
             }
         },
+        methods:{
+          pauseWaiting(){
+            const loading = this.$loading({
+               lock: true,
+               text: '备份数据中，请勿关闭浏览器~',
+               spinner: 'el-icon-loading',
+               background: 'rgba(0, 0, 0, 0.7)'
+             });
+              this.$axios.post("api/qps.php").then(res=>{
+                  if(res.data){
+                    loading.close();
+                    this.href="api/sqlfile/"+res.data;
+                  }
+              }).catch(e=>{
+                alert("备份失败!")
+              })
+          }
+        },
         computed: {
           LoginTime(){
             return localStorage.getItem("login_time")
@@ -105,7 +129,7 @@
             }
         },
         mounted(){
-            this.counterNumber=JSON.parse(localStorage.getItem("counterNumber"));
+            this.counterNumber=localStorage.getItem("counterNumber").split(",");
         }
     }
 

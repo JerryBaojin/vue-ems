@@ -5,7 +5,7 @@
                 <el-breadcrumb-item><i class="el-icon-tickets"></i> 用户</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-        <div class="container">
+        <div class="containera">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="DeleteAll">批量删除</el-button>
                 <el-select v-model="select_cate" placeholder="筛选用户" class="handle-select mr10">
@@ -203,7 +203,7 @@
               })
             },
             handleDelete(scope){
-            
+
               if (!Array.isArray(scope)) {
                 scope=[scope.row];
               }

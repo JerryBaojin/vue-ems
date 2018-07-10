@@ -1,7 +1,7 @@
 <template >
   <section id="ranking">
      <span id="ranking_title">
-       <el-select v-model="select_cate" placeholder="筛选时间段" class="handle-select mr10">
+       <el-select v-model="select_cate" placeholder="筛选时间段" class="handle-select mr11">
            <el-option key="1" label="本周" value="week"></el-option>
            <el-option key="2" label="本月" value="month"></el-option>
            <el-option key="3" label="本季度" value="quarter"></el-option>
@@ -29,7 +29,7 @@
  </section>
 </template>
 <script type="text/javascript">
-    let myWorker=new Worker("../static/js/webworker/FrontWorker.js");
+    let myWorker=new Worker("./static/js/webworker/FrontWorker.js");
 import Wx from './WeixinJssdk';
   export default {
     data(){
@@ -141,7 +141,7 @@ import Wx from './WeixinJssdk';
     }
   }
 </script>
-<style scope>
+<style >
 #rank{
   display: block;
 width: 93%;
@@ -154,18 +154,18 @@ background-color: #fff;
 border-radius: 20px;
 padding: 30px 15px;
 }
-.mr10 input{
+.mr11 input{
   font-size: 27px;
 }
-.el-input--small .el-input__inner{
-  height: 62px;
-line-height: 62px;
+#ranking .el-input--small .el-input__inner{
+  height: 62px !important;
+line-height: 62px !important;
 }
-.el-select-dropdown__item{
-  font-size: 23px;
+#ranking .el-select-dropdown__item{
+  font-size: 23px !important;
 }
-.el-input--small{
-  font-size: 20px;
+#ranking .el-input--small{
+  font-size: 20px !important;
 }
 .col_3{
   overflow: hidden;

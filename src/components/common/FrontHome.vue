@@ -27,9 +27,9 @@
         //如果to索引大于from索引,判断为前进状态,反之则为后退状态
         if(to.meta.index > from.meta.index){
           //设置动画名称
-          this.transitionName = 'slide-left';
+      //    this.transitionName = 'slide-left';
         }else{
-          this.transitionName = 'slide-right';
+        //  this.transitionName = 'slide-right';
         }
       }
     },
@@ -79,6 +79,9 @@
   }
   .food .move-enter, .food .move-leave {
     transform: translate3d(100%, 0, 0);
+  }
+  .el-input{
+    width: unset !important;
   }
 
 </style>

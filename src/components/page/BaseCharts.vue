@@ -6,7 +6,7 @@
                 <el-breadcrumb-item>基础图表</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-        <div class="container">
+        <div class="containera">
             <div class="plugins-tips">
                 vue-schart：vue.js封装sChart.js的图表组件。
                 访问地址：<a href="https://github.com/lin-xin/vue-schart" target="_blank">vue-schart</a>
@@ -84,5 +84,5 @@
         font-size: 22px;
         color: #1f2f3d;
     }
-    
+
 </style>

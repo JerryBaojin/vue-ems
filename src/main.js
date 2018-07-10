@@ -6,6 +6,8 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';    // 默认主题
 import "babel-polyfill";
 import store from './vuex/store'
+
+
 Vue.use(ElementUI, { size: 'small' });
 
 Vue.prototype.$axios = axios;

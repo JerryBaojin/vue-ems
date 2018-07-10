@@ -5,7 +5,7 @@
                 <el-breadcrumb-item><i class="el-icon-tickets"></i> 日志</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-        <div class="container">
+        <div class="containera">
 
 
             <el-table  max-height="450" :data="data" border style="width: 100%" ref="multipleTable"  >

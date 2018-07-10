@@ -5,7 +5,7 @@
                 <el-breadcrumb-item><i class="el-icon-tickets"></i> 用户</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-        <div class="container">
+        <div class="containera">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="deleteAll">批量删除</el-button>
                 <el-input v-model="select_word" placeholder="筛选管理员昵称称关键词" class="handle-input mr10"></el-input>

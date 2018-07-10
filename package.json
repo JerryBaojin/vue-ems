@@ -22,6 +22,7 @@
     "vue-schart": "^0.1.4",
     "vuedraggable": "^2.16.0",
     "vuex": "^3.0.1",
+    "vux": "^2.9.2",
     "weixin-js-sdk": "^1.3.2"
   },
   "devDependencies": {

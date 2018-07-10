@@ -5,7 +5,7 @@
                 <el-breadcrumb-item><i class="el-icon-tickets"></i> 用户积分</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-        <div class="container">
+        <div class="containera">
             <div class="handle-box">
                 <el-button type="primary" icon="delete" class="handle-del mr10" @click="exportExcel">导出当前格式的数据</el-button>
                 <el-select v-model="select_cate" placeholder="筛选时间段" class="handle-select mr10">
@@ -66,7 +66,7 @@
 </template>
 
 <script>
-          let myWorker=new Worker("../static/js/webworker/webWorker.js");
+          let myWorker=new Worker("./static/js/webworker/webWorker.js");
 
     export default {
         data() {
