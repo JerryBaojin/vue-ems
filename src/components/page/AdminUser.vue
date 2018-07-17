@@ -13,7 +13,7 @@
                 <el-button type="primary" icon="search" @click="add">新增管理员</el-button>
             </div>
 
-            <el-table  max-height="450" :data="data" border style="width: 70%" ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelection">
+            <el-table  max-height="450" :data="data" border ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelection">
               <el-table-column type="selection" width="55"></el-table-column>
                 <!-- <el-table-column prop="id" width="55" label="id"></el-table-column> -->
                 <el-table-column prop="UID" width="120" label="管理员身份">
@@ -276,7 +276,7 @@
                     }
                   })
 
-                    this.$message.success(`删除失败!`);
+                    this.$message.success(`删除成功!`);
                 }).catch(e=>{
                   console.log(res)
               })

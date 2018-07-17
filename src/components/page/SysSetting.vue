@@ -35,7 +35,7 @@
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
-              style="width:200px;"
+              style="width:223px;"
               v-model="ruleForm.period"
               value-format="timestamp"
               type="datetimerange"
@@ -75,10 +75,10 @@
           </el-tooltip>
         </el-form-item>
 
-        <el-form-item label="题型选择" >
+        <el-form-item label="题型选择" v-show="ruleForm.combine!='manchoose'">
           <el-select  v-model="ruleForm.qType" name="">
 
-            <el-option v-for="(v,x) in typeLists" :key="x" :label="v['qType']" :value="v['qType']" checked ></el-option>
+            <el-option v-for="(v,x) in typeLists" :key="x" :label="v" :value="v" checked ></el-option>
 
           </el-select>
           <el-tooltip content="选择题库中问题已有的分类.若选择默认,则随机抽取组卷." placement="top">
@@ -132,7 +132,7 @@ import ScoresSetting from './ScoresSetting.vue';
       return {
         url: 'api/sys.php',
         editVisible:false,
-        typeLists:[{qType:"默认"}],
+        typeLists:["默认"],
         ruleForm: {
           period: [],
           timu:0,
@@ -159,10 +159,7 @@ import ScoresSetting from './ScoresSetting.vue';
                 {required: true, message: '请输入答题倒计时 单位(秒)'},
                 { type: 'number', message: '时间必须为数字值'}
           ],
-          timu: [
-            {  required: true, message: '请输入每套题的数目' },
-            { type: 'number',min: 1, max: 100, message: '请输入每套题的数目', trigger: 'blur' }
-          ],
+
           perconunter: [
             {required: true, message: '请输入每题答题时间 单位(秒)', trigger: 'blur' },
             { type: 'number', message: '时间必须为数字值'}
@@ -221,13 +218,10 @@ import ScoresSetting from './ScoresSetting.vue';
         res.data.types=JSON.parse(res.data.types);
 
         res.data.period=JSON.parse(res.data.period);
-        res.data.qTypeList.map((v,k)=>{
-          if(v.qType==''){
-            res.data.qTypeList.splice(k,1);
-          }
-        })
 
-        this.typeLists=this.typeLists.concat(res.data.qTypeList);
+
+
+        this.typeLists=JSON.parse(res.data.qTypeList);
 
         delete res.data.qTypeList;
         this.ruleForm={...res.data};
@@ -262,7 +256,7 @@ margin: 10px;
 }
   .containers{
     background-color: white;
-    max-width: 50%;
+    max-width: 33%;
     padding: 2%;
     margin: 10px;
 

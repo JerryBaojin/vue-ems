@@ -12,7 +12,6 @@
   					</span>
   					<span class="f-r">
               <router-link to="Rank"><img src="../../../static/img/ranking.png" alt=""></router-link>
-
   					</span>
   				</div>
   				<div class="title">

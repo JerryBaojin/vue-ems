@@ -8,10 +8,10 @@
               <div v-for="(value,index) in questions" v-show="index==current" :id="'block'+index">
                 <div id="q1">
                   <div class="content">
-                    <p class="subject_t">{{index+1}}、{{value.question}}{{value.correctType.length>1?'(多选)':null}}</p>
+                    <p class="subject_t">{{index+1}}、<el-tag  class="c_types">{{value._types}}</el-tag>{{value.question}}</p>
                     <p v-for="(items,key) in value.answer">
                       <span><input :id="'rd'+value.id+key" :disabled="!abledToClick"  :name="'rd'+index" :data-answer="items[0]" :data-pid="key+1" :type="value.type" ></span>
-                      <label :for="'rd'+value.id+key" >{{key==0?"A":key==1?"B":"C"}}:{{items[1]}}</label>
+                      <label :for="'rd'+value.id+key" >{{items[2]}}:{{items[1]}}</label>
                     </p>
                   <div class="enter_btn">
                     <a id="b1" @click="sub(index)" v-if="doneGrade.length==0" disabled="true" href="javascript:void(0);">确定</a>
@@ -61,11 +61,15 @@ export default {
     }
   },
   computed:{
+
     scores(){
+      let __this=this;
       let s=0;
       this.doneGrade.map((v)=>{
         if (v.res==1) {
-        s+=this.level[v.types]
+          let _types=v.types;
+        _types=='jungle'?_types="judge":null;
+        s+=__this.level[_types]
         }
       }
       )
@@ -167,16 +171,13 @@ export default {
               alert("非法答题!");
               location.href="http://weixin.scnjnews.com/dati/api/useropenid.php";
             break;
-          case 204:
-              alert("很抱歉,所有红包已经发放完了!");
-            break;
+
           case 200:
               res.data.money==0?this.weChat=false:this.weChat=true;
 
-              this.wxhb=res.data.money;
               if (res.data.lvInfos.levelUp) {
                 if(res.data.lvInfos.tag!=='暂未获得称号'){
-                  3alert("恭喜你升至"+res.data.lvInfos.tag);
+                  alert("恭喜你升至"+res.data.lvInfos.tag);
                 }
               }
             break;
@@ -200,6 +201,7 @@ export default {
       })
     },
     convert(data){
+      data=data.toString();
       switch (data) {
           case '1':
           data="A";
@@ -217,6 +219,7 @@ export default {
           data="E";
           break;
       }
+
       return data;
     },
     counterStart(){
@@ -280,8 +283,10 @@ export default {
         alert("获取题目失败!");
         return false;
       }
-          res.data=res.data.data
+          res.data=res.data.data;
+
           res.data.map((v,k)=>{
+            v['types']==="single"?res.data[k]['_types']="单选":(v['types']==="muti"?res.data[k]['_types']="多选":res.data[k]['_types']="判断");
             this.qid.push(v.id);
             let datas=v.answer.split("###");
             datas.shift();
@@ -290,8 +295,29 @@ export default {
               datas[k]=v.split(".")
             });
               datas.shunt();
+              datas.map((v,k)=>{
+                let _ar="A";
+                switch (k) {
+                      case 0:
+                      _ar="A";
+                      break;
+                      case 1:
+                      _ar="B";
+                      break;
+                      case 2:
+                      _ar="C";
+                      break;
+                      case 3:
+                      _ar="D";
+                      break;
+                      case 4:
+                      _ar="E";
+                      break;
+                  default:
+                }
+                datas[k][2]=_ar;
+              })
             res.data[k]['answer']=datas;
-
               res.data[k].clickAble=false;
               if(/,/.test(v.correctType)){
                 res.data[k]['type']="checkbox"
@@ -320,6 +346,9 @@ export default {
                           case 3:
                           _ar="D";
                           break;
+                          case 4:
+                          _ar="E";
+                          break;
                       default:
                     }
                     res.data[k].correctIndex+=_ar;
@@ -328,6 +357,7 @@ export default {
               })
             //  res.data[k].correctType=
           })
+
         this.questions=res.data;
         this.totalTimesLeft=Number(this.config.perconunter)*res.data.length;
         this.counterStart();
@@ -417,6 +447,11 @@ li{
     font-size: 23px;
   }.el-loading-spinner{
     font-size: 30px;
+  }
+  .c_types{
+  font-size: 31px;
+  height: 43px;
+  line-height: 43px;
   }
   .count{
     text-indent: 3%;

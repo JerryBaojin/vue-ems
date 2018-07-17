@@ -1,6 +1,19 @@
 <template >
 
     <div class="w640" v-cloak>
+      <div class="hm_icon">
+        <span class="f-l">
+          <router-link to="person">
+            <img :src="uInfo.headImg" style="" />
+            <h2>{{uInfo.nickname}}<br>
+              <!-- <small>积分：2050</small> -->
+            </h2>
+          </router-link>
+        </span>
+        <span class="f-r">
+          <router-link to="Rank"><img src="../../../static/img/ranking.png" alt=""></router-link>
+        </span>
+      </div>
     	<div id="h1">
     		<header>
     			<div class="title">
@@ -33,7 +46,8 @@
 
 
 <el-dialog
-  title="请输入验证码"
+  style="font-size:25px;"
+  :fullscreen="fullScreen"
   :visible.sync="dialogVisible"
   custom-class="dialog"
 >
@@ -56,6 +70,11 @@ import Wx from './WeixinJssdk';
   export default {
     data(){
       return{
+        fullScreen:false,
+        uInfo:{
+            headImg:"",
+            nickname:""
+        },
         uid:null,
         code:"",
         dialogVisible: false,
@@ -190,7 +209,7 @@ import Wx from './WeixinJssdk';
                   this.$axios.post("api/sysConfig.php",{
                     action:"getConfig"
                   }).then(res=>{
-
+                          this.uInfo=JSON.parse(localStorage.getItem("wxUser-jw"))['__Uinfos'];
                             if (res.data.sysstatus=='开启') {
                               this.taotiExit=true;
                             }
@@ -228,7 +247,7 @@ import Wx from './WeixinJssdk';
   font-weight: bold;
   }
 .dialog *{
-  font-size: 22px;
+  font-size: 28px;
 }
 .el-dialog__title{
   font-size: 22px !important;

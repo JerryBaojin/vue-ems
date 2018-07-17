@@ -264,7 +264,7 @@ padding: 1em;
 }
   .containers{
     background-color: white;
-    max-width: 50%;
+    max-width: 33%;
     padding: 2%;
   }
   .avatar-uploader .el-upload {

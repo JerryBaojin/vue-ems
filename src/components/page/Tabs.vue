@@ -25,6 +25,7 @@
                     <el-upload
                       class="upload-demo"
                       :action="url"
+                      :headers="fileUploadHeader"
                       :on-success="handleUploadSuccess"
                       accept=".csv"
                       :limit="1"
@@ -126,6 +127,11 @@
             this.getData();
         },
         computed: {
+          fileUploadHeader(){
+            return {
+              "token":this.$store.state.nowLogin.role
+            }
+          },
             data() {
                   return this.tableData.slice((this.cur_page-1)*10,this.cur_page*10)
             }
@@ -133,10 +139,10 @@
         methods: {
           handleUploadSuccess(v){
             if(v>0){
-              this.$message.success(`上传题库成功!`);
+              this.$message.success(`上传用户成功!`);
               this.getData();
             }else{
-              this.$message.error("文件删除出错!");
+              this.$message.error("上传失败，请检查是否手机号重复!");
             }
           },
             handleCurrentChange(val) {
@@ -153,7 +159,6 @@
                 this.$axios.post(this.url, {
                     action:"getUsers"
                 }).then((res)=> {
-                    console.log(res);
                     this.backUpData = Array.from(res.data);
                     this.tableData = Array.from(res.data);
                 }).catch(e=>{

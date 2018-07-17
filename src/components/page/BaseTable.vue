@@ -25,27 +25,40 @@
                 <el-button type="primary" @click="dialogVisible = true">点击上传题库</el-button>
 
                 <el-dialog
-                  title="提示"
+                  title="上传题库"
                   :visible.sync="dialogVisible"
                   width="30%"
                 >
+                <div style="margin-bottom: 20px;">
+                    <el-input placeholder="添加分类"  v-model="v_addQuizTypes" class="input-with-select">
+                       <el-select v-model="currentQuiz_types"   slot="prepend" placeholder="选择分类">
+                          <el-option v-for="(v,k) in quiz_types" :key="k" :label="v" :value="v"></el-option>
+                       </el-select>
+                     <el-button slot="append" @click="addQuizTypes" icon="el-icon-plus"></el-button>
+                   </el-input>
+                </div>
+
+                <div class="">
                   <span>
                     <el-upload
                       class="upload-demo"
                       :action="url"
+                      :headers="fileUploadHeader"
                       :on-success="handleUploadSuccess"
                       accept=".csv"
                       :limit="1"
                       :file-list="uploadedFiles"
                       >
-                      <el-button size="small" type="primary" >点击上传</el-button>
-                      <div slot="tip" class="el-upload__tip">只能上传csv文件，且不超过20m</div>
+                      <el-button size="small" type="primary" >点击选择上传题库文件</el-button>
+                      <div slot="tip" class="el-upload__tip">只能上传csv文件，且不超过5m</div>
                       </el-upload>
                   </span>
                   <span slot="footer" class="dialog-footer">
-                    <el-button @click="dialogVisible = false">取 消</el-button>
+                    <el-button @click="dialogVisible = false">关闭</el-button>
                     <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
                   </span>
+                </div>
+
                 </el-dialog>
 
             </div>
@@ -137,7 +150,7 @@
         data() {
             return {
                 getRowKeys(row){
-                return row.id;
+                  return row.id;
                 },
                 sysconfig:[],
                 url: 'api/index.php',
@@ -166,8 +179,11 @@
                 },
                 idx: -1,
                 totalSelect:[],
+                v_addQuizTypes:'',
                 _id:-1,
-                chooseQ:true
+                chooseQ:true,
+                currentQuiz_types:"默认",
+                quiz_types:["默认"]
             }
         },
         watch:{
@@ -184,6 +200,12 @@
             this.getData();
         },
         computed: {
+          fileUploadHeader(){
+            return {
+              "qTypes":this.toUnicodeFun(this.currentQuiz_types),
+              "token":this.$store.state.nowLogin.role
+            }
+          },
           selectedOps(){
             return this.backUpData.filter((v)=>v.isChecked==1).length;
           },
@@ -195,6 +217,40 @@
             }
         },
         methods: {
+          toUnicodeFun(data){
+            var str ='';
+           for(var i=0;i<data.length;i++){
+              str+="\\u"+data.charCodeAt(i).toString(16);
+           }
+           return str;
+          },
+          addQuizTypes(){
+            this.$confirm("确认添加此类型吗?","提示",{
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(res=>{
+
+              this.quiz_types=[...this.quiz_types,this.v_addQuizTypes];
+              this.$message({
+                type:"success",
+                message:"添加成功!"
+              })
+                      this.v_addQuizTypes='';
+              this.$axios.post(this.url,{
+                action:"updateQuizConfig",
+                msg:`添加了${this.v_addQuizTypes}分类`,
+                moreDate:this.quiz_types
+              })
+            }).catch(()=>{
+              this.message({
+                type:"info",
+                message:"已取消添加!"
+              })
+            })
+
+
+          },
           chanedChecking(pid,row,status){
             if(confirm("确认此操作吗?")){
               let p=0;
@@ -226,7 +282,6 @@
             this.changeChecking(this.multipleSelection,"0");
           },
           syncVueDates(date,cStatus){
-            console.log(cStatus)
             let __backUpData=this.backUpData;
             let __tableDate=this.tableData;
 
@@ -281,7 +336,7 @@
               this.$message.success(`上传题库成功!`);
               this.getData();
             }else{
-              this.$message.error("文件删除出错!");
+              this.$message.error("文件上传出错!");
             }
           },
           handleCurrentChange(val) {
@@ -305,20 +360,17 @@
                 return row.tag === value;
             },
             handleEdit(index, row) {
-
-                if(row.correct.length!=1){
-                  this.tempFormDates['checkedLists']=row.correct.split(",");
-                }else{
-                    this.tempFormDates['checkedLists']=[row.correct];
-                }
-                  this.tempFormDates['options']=new Array();
+              console.log(row);
+                row.correct.length!=1?this.tempFormDates['checkedLists']=row.correct.split(","):this.tempFormDates['checkedLists']=[row.correct];
+                this.tempFormDates['options']=new Array();
                 let answers=row['answer'].split(/###[A-Z]./);
 
                 answers=answers.slice(1,answers.length);
-                console.log(answers)
+
                 answers.map((value,key)=>{
                       this.tempFormDates['options'].push([convert(key+1),value]);
                 })
+
               //  row['options']=row['answer'].split("###");
                 this.form = {...row};
                 this.idx = row.id;
@@ -407,9 +459,17 @@
               this.form.correct=this.tempFormDates.checkedLists.join(",");
               if(flag){
                 if(this.form.correct.length>=2){
-                  this.form.type="多选"
+                  this.form.type="多选";
+                  this.form.types="muti";
                 }else{
-                  this.form.type="单选"
+                  if (/正确|错误/.test(this.form.answer)) {
+                      this.form.type="判断";
+                      this.form.types="jungle";
+                  }else{
+                      this.form.type="单选";
+                      this.form.types="single";
+                  }
+
                 }
                                 this.editVisible = false;
                                 this.$axios.post(this.url,{
@@ -444,20 +504,33 @@
                   this.$message.success('删除成功');
                 }
               }).catch(e=>{
-                this.$message.success('删除失败功');
+                this.$message.error('删除失败');
               })
                         this.delVisible = false;
             }
           },
           mounted(){
-            this.$axios.post("api/sys.php",{
-              action:"getConfig"
-            }).then(res=>{
+            this.$axios.all([
+              this.$axios.post("api/sys.php",{
+                action:"getConfig"
+              }),
+              this.$axios.post("api/index.php",{
+                action:"getQuizConfig"
+              })
+            ]).then(this.$axios.spread((res, res1)=>{
+
               this.sysconfig={...res.data};
               res.data.delivery=="false"?this.chooseQ=true:this.chooseQ=false;
+
+              this.quiz_types=JSON.parse(res1.data.types);
+            })
+          )
+            /*
+            .then(res=>{
+
             }).catch(e=>{
               this.$message.error("网络传输错误!")
-            })
+            })*/
           }
     }
 
@@ -495,5 +568,14 @@
     .del-dialog-cnt{
         font-size: 16px;
         text-align: center
+    }
+    .el-select .el-input {
+  width: 130px;
+}
+    .selectArea{
+      display: flex;
+    }
+    .selectArea div{
+      flex: 1;
     }
 </style>

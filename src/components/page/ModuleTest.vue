@@ -1,5 +1,5 @@
   <template id="">
-    <div class="containers" style="max-width:34%;">
+    <div class="containers" style="max-width:27%;">
       <div class="card_title">
         套题测试
       </div>
@@ -25,7 +25,7 @@
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
-              style="width:200px;"
+              style="width:223px;"
               v-model="ruleForm.period"
               value-format="timestamp"
               type="datetimerange"
@@ -43,14 +43,15 @@
         <el-form-item label="组卷模式" >
           <el-select  v-model="ruleForm.combine" name="">
             <el-option label="随机组卷" value="random" ></el-option>
+              <el-option label="自选题目" value="manchoose" ></el-option>
             <el-option label="指定组卷" value="manmade" ></el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="题型选择" >
+        <el-form-item label="题型选择" v-show="ruleForm.combine!='manchoose'">
           <el-select  v-model="ruleForm.qType" name="">
 
-            <el-option v-for="(v,x) in typeLists" :key="x" :label="v['qType']" :value="v['qType']" checked ></el-option>
+            <el-option v-for="(v,x) in typeLists" :key="x" :label="v" :value="v" checked ></el-option>
 
           </el-select>
         </el-form-item>
@@ -85,7 +86,7 @@
       return {
         url: 'api/sysConfig.php',
         editVisible:false,
-        typeLists:[{qType:"默认"}],
+        typeLists:["默认"],
         ruleForm: {
           period: [],
           timu:0,
@@ -166,13 +167,9 @@
         res.data.timu=Number(res.data.timu);
         res.data.types=JSON.parse(res.data.types);
         res.data.period=JSON.parse(res.data.period);
-        res.data.qTypeList.map((v,k)=>{
-          if(v.qType==''){
-            res.data.qTypeList.splice(k,1);
-          }
-        })
 
-        this.typeLists=this.typeLists.concat(res.data.qTypeList);
+
+        this.typeLists=JSON.parse(res.data.qTypeList);
 
         delete res.data.qTypeList;
         this.ruleForm={...res.data};
