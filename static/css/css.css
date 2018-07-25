@@ -322,24 +322,13 @@ header .f0 {
 }
 
 .hm_btn {
-	width: 493px;
+	width: 400px;
 	height: 106px;
 	margin: 0 auto;
 	margin-top: 50px;
 }
 
-.content {
-	background: rgba(255, 255, 255, 0.6);
-	border-radius: 6px;
-	width: 560px;
-	margin: 0 auto;
-	padding: 20px;
-	margin-top: 30px;
-	line-height: 36px;
-	min-height: 280px;
-	color: #450b0c;
-	font-size: 30px;
-}
+
 
 .content_img {
 	width: 480px;

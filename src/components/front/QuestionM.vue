@@ -1,6 +1,7 @@
 <template id="">
   <div class="">
       <div class="count">进度{{current+1}}/{{questions.length}}</div>
+
             <ul class="countdown">
               <li> <span class="seconds">{{totalTimesLeft}}</span></li>
             </ul>
@@ -11,7 +12,7 @@
                     <p v-for="(items,key) in value.answer">
                       <span><input :id="'rd'+value.id+key" :disabled="value.clickAble" :name="'rd'+index" :data-pid="key+1" :type="value.type" ></span>
                       <label :for="'rd'+value.id+key">{{items}}</label>
-                    </p>
+                    </p>  ，吗你你
                   <div class="enter_btn">
                     <a id="b1" @click="sub(index)" disabled="true" href="javascript:void(0);">确定</a>
                   </div>
@@ -74,6 +75,25 @@ export default {
       }).catch(e=>{
         console.log(e);
       })
+    },convert(data){
+      switch (data) {
+          case '1':
+          data="A";
+          break;
+          case '2':
+          data="B";
+          break;
+          case '3':
+          data="C";
+          break;
+          case '4':
+          data="D";
+          break;
+          case '5':
+          data="E";
+          break;
+      }
+      return data;
     },
     counterStart(){
       let that=this;
@@ -110,7 +130,6 @@ export default {
       },1000)
     },
     sub(index){
-
             let that=this;
             if(!that.abledToClick){
             return false;
@@ -123,7 +142,7 @@ export default {
             }
             let __nowAnswers=[];
             for(let k=0;k<ops.length;k++){
-              __nowAnswers.push(ops[k].dataset.pid)
+              __nowAnswers.push(this.convert(ops[k].dataset.pid));
             }
             this.questions[index].clickAble=true;
             this.questions[index]['correctType'].length>=2?dot=",":dot="";
@@ -168,10 +187,10 @@ export default {
       action:"getQuestions",
       tag:this.msg
         }).then(res=>{
-
           res.data.map((v,k)=>{
             this.qid.push(v.id)
             res.data[k]['answer']=v.answer.split("###");
+            res.data[k]['answer'].shift();
               res.data[k].clickAble=false;
               if(/,/.test(v.correctType)){
                 res.data[k]['type']="checkbox"
@@ -180,13 +199,11 @@ export default {
               }
           })
         this.questions=res.data;
-
         this.totalTimesLeft=Number(this.config.perconunter)*res.data.length;
         this.counterStart();
     }).catch(e=>{
       console.log(e)
     })
-
 
   }
 }
@@ -241,10 +258,11 @@ li{
     opacity: 0.7;
   }
   .count{
-    text-indent: 4%;
-    font-size: 26px;
+    text-indent: 3%;
+    font-size: 29px;
     color: orangered;
     position: absolute;
     top: 139px;
+    min-width: 178px;
   }
 </style>

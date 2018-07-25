@@ -20,12 +20,22 @@
 			</div>
 		</div>
 	</div>
+<div class="steps">
+  <el-steps :active="active" finish-status="success">
+    <el-step title="验证手机号"></el-step>
+    <el-step title="确认信息"></el-step>
+    <el-step title="登录"></el-step>
+  </el-steps>
+<el-button style="margin-top: 12px;" @click="next">下一步</el-button>
+</div>
+
   </div>
 </template>
 <script type="text/javascript">
   export default {
     data(){
       return{
+        active: 0,
         openid:"",
         url:"api/frontUser.php",
         counts:'',
@@ -33,11 +43,13 @@
         validate:{
           counts:false,
           pwd:false
-        }
+        },
       }
     },
     methods:{
-
+      next() {
+        if (this.active++ > 2) this.active = 0;
+      },
       reset(){
         this.validate={
           counts:false,
@@ -83,7 +95,6 @@
     },
     created(){
       let that=this;
-
       if(this.$route.query.hasOwnProperty('openid')){
           that.openid=this.$route.query.openid;
       }else{
@@ -97,7 +108,19 @@
   }
 </script>
 <style media="screen">
+  .steps{
+    position: absolute;
+    width: 71%;
+    bottom: 0;
+    height: 320px;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+  }
   .el-message__content,.el-message__icon{
+    font-size: 30px;
+  }
+  .el-step__title {
     font-size: 30px;
   }
   .error-notic{

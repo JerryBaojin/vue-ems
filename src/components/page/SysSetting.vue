@@ -1,6 +1,6 @@
   <template id="">
     <div class="containers">
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="150px" class="demo-ruleForm">
+      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="200px" class="demo-ruleForm">
         <el-form-item v-show="false" label="答题倒计时(秒)" prop="conunter">
           <el-input type="number" v-model.number="ruleForm.conunter"></el-input>
         </el-form-item>
@@ -9,13 +9,47 @@
           <el-input type="number" v-model.number="ruleForm.perconunter"></el-input>
         </el-form-item>
 
+        <el-form-item  label="答题正确得分" >
+          <el-input type="number" v-model.number="ruleForm.scoreR"></el-input>
+        </el-form-item>
 
+        <el-form-item  label="答题错误得分" >
+          <el-input type="number" v-model.number="ruleForm.scoreW"></el-input>
+        </el-form-item>
 
-        <el-form-item label="开启套题模式" prop="delivery">
+        <el-form-item label="答题模式" prop="delivery">
+          <el-radio v-model="ruleForm.model" label="0">普通模式</el-radio>
+          <el-radio v-model="ruleForm.model" label="1">微信发红包模式</el-radio>
+        </el-form-item>
+
+        <el-form-item v-if="ruleForm.model=='1'" label="总共发放金额" >
+          <el-input type="number" v-model.number="ruleForm.wMoney"></el-input>
+        </el-form-item>
+        <el-form-item v-if="ruleForm.model=='1'" label="单个红包最大金额" >
+          <el-input type="number" v-model.number="ruleForm.wMaxMoney"></el-input>
+        </el-form-item>
+        <el-form-item v-if="ruleForm.model=='1'" label="达到多少分可获得红包" >
+          <el-input type="number" v-model.number="ruleForm.wLowWinner"></el-input>
+        </el-form-item>
+
+        <el-form-item label="前台页面分享信息" >
+              <el-input type="text" v-model="ruleForm.shareDesc"></el-input>
+        </el-form-item>
+        <el-form-item label="前台页面分享重定向地址" >
+              <el-input type="text" v-model="ruleForm.shareLink"></el-input>
+        </el-form-item>
+        <el-form-item label="前台页面分享图标" >
+              <el-input type="text" v-model="ruleForm.shareImage"></el-input>
+        </el-form-item>
+        <el-form-item label="是否允许修改已答题目" >
+            <el-switch v-model="ruleForm.editAble"></el-switch>
+        </el-form-item>
+
+        <el-form-item v-show="false" label="开启套题模式" prop="delivery">
           <el-switch v-model="ruleForm.delivery"></el-switch>
         </el-form-item>
 
-        <el-form-item label="每套题的数目" v-if="ruleForm.delivery" prop="timu">
+        <el-form-item  label="每套题的数目" v-if="ruleForm.delivery" prop="timu">
           <el-input type="number" v-model.number="ruleForm.timu"></el-input>
         </el-form-item>
 
@@ -25,6 +59,7 @@
             <el-option value="手工组卷"> </el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item>
           <el-button type="primary" @click="submitForm('ruleForm')">保存</el-button>
           <el-button @click="resetForm('ruleForm')">重置</el-button>
@@ -90,10 +125,20 @@
         url: 'api/sys.php',
         editVisible:false,
         ruleForm: {
+          scoreW:0,
+          scoreR:0,
+          model:0,
+          wMoney:0,
+          wLowWinner:0,
+          wMaxMoney:0,
           timu:0,
           combine:"随机组卷",
           conunter: 30,
           perconunter: 30,
+          shareImage:"",
+          shareDesc:"",
+          shareLink:"",
+          editAble:false,
           delivery: false,
         },
         ruleForm2: {
@@ -105,6 +150,14 @@
           conunter: [
                 {required: true, message: '请输入答题倒计时 单位(秒)', trigger: 'blur' },
                 { type: 'number', message: '时间必须为数字值'}
+          ],
+          scoreR:[
+            {required: true, message: '请输入大于或等于0的整数', trigger: 'blur' },
+            { type: 'number', message: '得分必须为数字值',min: 1, max: 100}
+          ],
+          scoreW:[
+            {required: true, message: '请输入大于或等于0的整数', trigger: 'blur' },
+            { type: 'number', message: '得分必须为数字值',min: 1, max: 100}
           ],
           timu: [
             {  required: true, message: '请输入每套题的数目', trigger: 'blur' },
@@ -186,6 +239,7 @@
         }
       ).then(res=>{
         delete res.data.id;
+        res.data.editAble==1?res.data.editAble=true:res.data.editAble=false;
         res.data.conunter=Number(res.data.conunter);
         res.data.perconunter=Number(res.data.perconunter);
         res.data.timu=Number(res.data.timu);

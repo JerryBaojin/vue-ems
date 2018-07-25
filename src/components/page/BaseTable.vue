@@ -59,6 +59,8 @@
                 </el-table-column>
                 <el-table-column prop="correct" label="正确答案" >
                 </el-table-column>
+
+
                 <el-table-column prop="type" label="类型" >
                 </el-table-column>
                 <el-table-column   label="是否已入选题库" >
@@ -274,9 +276,12 @@
             });
           },
             handleUploadSuccess(v){
+
             if(v>0){
               this.$message.success(`上传题库成功!`);
               this.getData();
+            }else{
+              this.$message.error("文件删除出错!");
             }
           },
             handleCurrentChange(val) {
@@ -307,20 +312,43 @@
                     this.tempFormDates['checkedLists']=[row.correct];
                 }
                   this.tempFormDates['options']=new Array();
+                let answers=row['answer'].split(/###[A-Z]./);
 
-                row['answer'].split("###").map((value,key)=>{
-                  console.log(value)
-                      let  dot=".";
-                      /\./.test(value)?dot=".":dot="．";
-                      let tempStoreArr=value.split(dot);
-                      tempStoreArr[0].length>=2?tempStoreArr[0]=tempStoreArr[0].slice(0,1):null;
-                      this.tempFormDates['options'].push(tempStoreArr);
+                answers=answers.slice(1,answers.length);
+                console.log(answers)
+                answers.map((value,key)=>{
+                      this.tempFormDates['options'].push([convert(key+1),value]);
                 })
               //  row['options']=row['answer'].split("###");
                 this.form = {...row};
                 this.idx = row.id;
                 this.editVisible = true;
+                function convert(num){
+                  let s="A";
+                  switch (num) {
+                    case 1:
+                      s="A";
+                      break;
+                    case 2:
+                      s="B";
+                      break;
+                      case 3:
+                        s="C";
+                        break;
+                        case 4:
+                          s="D";
+                          break;
+                          case 5:
+                            s="E";
+                            break;
+                            case 6:
+                              s="F";
+                              break;
+                    default:
 
+                  }
+                  return s;
+                }
             },
             handleDelete(index, row) {
                 this.idx = index;
@@ -367,14 +395,15 @@
                   if(v[1]=='' || p[1]==''){
                     flag=false;
                   }
-                    return v.join(".")+"###\n"+p.join(".");
+                    return v.join(".")+"###"+p.join(".");
                 }else{
                   if(p[1]==''){
                     flag=false;
                   }
                     return v+"###"+p.join(".");
                 }
-              })
+              });
+              this.form.answer="###"+this.form.answer;
               this.form.correct=this.tempFormDates.checkedLists.join(",");
               if(flag){
                 if(this.form.correct.length>=2){
@@ -382,23 +411,18 @@
                 }else{
                   this.form.type="单选"
                 }
-
-
-                            this.editVisible = false;
+                                this.editVisible = false;
                                 this.$axios.post(this.url,{
                                   action:"update",
                                   details:this.form
                                 }).then(res=>{
-                                    this.$message.success(`修改第 ${this.idx} 行成功`);
+                                    this.$message.success(`修改第 ${this.idx} 号成功`);
                                     const index=this.backUpData.findIndex(v=>v.id==this.idx);
-                                    console.log(index)
                                     this.$set(this.tableData, this.tableData.findIndex(v=>v.id==this.idx), this.form);
                                     this.$set(this.backUpData,index, this.form);
-                                    console.log(this.backUpData[index])
                                 }).catch(e=>{
                                   console.log(res)
                               })
-
               }else{
                     this.$message.error(`请填写所有选项的内容`);
               }

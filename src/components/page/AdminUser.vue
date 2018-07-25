@@ -7,51 +7,58 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量审核</el-button>
-                <el-select v-model="select_cate" placeholder="筛选类型" class="handle-select mr10">
-                    <el-option key="1" label="达到分数线" value="1"></el-option>
-                    <el-option key="2" label="未达到分数线" value="0"></el-option>
-                </el-select>
+                <el-button type="primary" icon="delete" class="handle-del mr10" @click="passAll">批量删除</el-button>
+
                 <el-input v-model="select_word" placeholder="筛选微信昵称关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
             </div>
 
-            <el-table  max-height="650" :data="data" border style="width: 100%" ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelectionChange">
+            <el-table  max-height="450" :data="data" border style="width: 70%" ref="multipleTable" :row-class-name="tableRowClassname" @selection-change="handleSelectionChange">
               <el-table-column type="selection" width="55"></el-table-column>
                 <!-- <el-table-column prop="id" width="55" label="id"></el-table-column> -->
-                <el-table-column prop="id" width="60" label="id"></el-table-column>
-                <el-table-column prop="nickname" label="微信昵称" width="120">
+                <el-table-column prop="UID" width="120" label="管理员身份">
+                    <template slot-scope="scope">
+                      {{scope.row.role==="SA"?'系统管理员':'题库管理员'}}
+                    </template>
                 </el-table-column>
-                <el-table-column prop="result" label="是否达到指定分数线" >
+                <el-table-column prop="counter" label="管理员昵称" >
                 </el-table-column>
-
-                <el-table-column prop="city" label="城市" >
-                </el-table-column>
-
-                <el-table-column prop="RegistTime" label="激活时间" >
-                </el-table-column>
-                <el-table-column prop="scores" label="得分" >
-                </el-table-column>
-                <el-table-column prop="money" label="获得的红包" >
+                <el-table-column prop="phone" label="手机号" width="120">
                 </el-table-column>
 
-                <el-table-column
-                  label="红包发放详情"
-                  width="180">
-                  <template slot-scope="scope">
-                    <div class="">
-                        {{scope.row.resData.err_code_des}}
-                    </div>
-
-                  </template>
+                <el-table-column  label="操作" width="180">
+                    <template slot-scope="scope">
+                        <el-button size="small" type="danger" :disabled="scope.row.status==1" @click="handlePass(scope)">删除</el-button>
+                        <el-button size="small" type="success" :disabled="scope.row.status==1" @click="handleEdit(scope)">修改</el-button>
+                    </template>
                 </el-table-column>
-
             </el-table>
 
             <div class="pagination">
                 <el-pagination @current-change="handleCurrentChange" layout="prev, pager, next" :total="tableData.length">
                 </el-pagination>
             </div>
+
+            <el-dialog title="编辑用户信息" :visible.sync="dialogFormVisible">
+              <el-form :model="form">
+                <el-form-item label="管理员名称" :label-width="formLabelWidth">
+                  <el-input v-model="form.counter" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="管理员手机号" :label-width="formLabelWidth">
+                  <el-input v-model="form.phone" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="管理员角色类型" :label-width="formLabelWidth">
+                  <el-select v-model="form.role" placeholder="请选择管理员角色类型">
+                    <el-option label="超级管理员" value="SA"></el-option>
+                    <el-option label="题库管理员" value="QA"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+              </div>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -61,15 +68,19 @@
         data() {
             return {
                 url: 'api/user.php',
+                form:{
+                  counter:"",
+                  role:"",
+                  phone:""
+                },
+                formLabelWidth:"250px",
                 tableData: [],
                 backUpData: [],
-                uploadedFiles:[],
+                select_word:"",
                 cur_page: 1,
                 multipleSelection: [],
-                select_cate: '',
-                select_word: '',
                 pass_list: [],
-                dialogVisible: false,
+                dialogFormVisible: false,
                 delVisible:false,
                 visible2:false,
                 is_search: false,
@@ -78,7 +89,15 @@
         },
         watch:{
           select_cate(val){
-            this.tableData=this.backUpData.filter(v=>v.result==val)
+            this.tableData=this.backUpData.filter(v=>{
+              if(val==0){
+                return    v.oid==null;
+              }else{
+                return  v.oid!=null;
+              }
+            }
+
+            )
           }
         },
         created() {
@@ -90,6 +109,9 @@
             }
         },
         methods: {
+            handleEdit(v){
+              console.log(v);
+            },
             handleCurrentChange(val) {
                 this.cur_page = val;
             },
@@ -102,22 +124,19 @@
             },
             getData() {
                 this.$axios.post(this.url, {
-                    action:"getUsers",
-                  }).then(res=> {
-                    res.data.map((v,k)=>{
-                        res.data[k]['resData']=JSON.parse(v['resData']);
-                    });
+                    action:"getSysuser",
+                }).then(res=> {
                     this.backUpData = res.data;
                     this.tableData = res.data;
-
                 }).catch(e=>{
+                  console.log(e);
                   this.$message.error("网络传输错误!");
                 })
             },
             search() {
                 this.is_search = true;
                 let reg=new RegExp(this.select_word)
-              this.tableData=this.backUpData.filter(v=> reg.test(v.nickname))
+                this.tableData=this.backUpData.filter(v=> reg.test(v.phone))
             },
             filterTag(value, row) {
                 return row.tag === value;
